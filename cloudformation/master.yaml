@@ -1,0 +1,67 @@
+Description: >
+
+    This is the master template to install the infrastructure for my aws-ramp project. 
+    Nested templates are documented in the corresponding files.
+    
+
+    Last Modified: 2020-03-03
+    Author: Toby Buckley <tobuck@amazon.com>
+
+Resources:
+
+    VPC:
+        Type: AWS::CloudFormation::Stack
+        Properties:
+            #Hosted here, but a copy is in this folder
+            TemplateURL: https://tobuck-cf.s3-us-west-2.amazonaws.com/cloudformation/vpc.yaml
+            Parameters:
+                EnvironmentName:    !Ref AWS::StackName
+                VpcCIDR:            10.0.0.0/16
+                PublicSubnet1CIDR:  10.0.8.0/21
+                PublicSubnet2CIDR:  10.0.16.0/21
+                PrivateSubnet1CIDR: 10.0.24.0/21
+                PrivateSubnet2CIDR: 10.0.32.0/21
+
+   SecurityGroups:
+        Type: AWS::CloudFormation::Stack
+        Properties:
+            TemplateURL: https://tobuck-cf.s3-us-west-2.amazonaws.com/cloudformation/security-groups.yaml
+            Parameters:
+                EnvironmentName: !Ref AWS::StackName
+                VPC: !GetAtt VPC.Outputs.VPC
+
+    ALB:
+        Type: AWS::CloudFormation::Stack
+        Properties:
+            TemplateURL: https://tobuck-cf.s3-us-west-2.amazonaws.com/cloudformation/load-balancers.yaml
+            Parameters:
+                EnvironmentName: !Ref AWS::StackName
+                VPC: !GetAtt VPC.Outputs.VPC
+                Subnets: !GetAtt VPC.Outputs.PublicSubnets
+                SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
+
+    ECS:
+        Type: AWS::CloudFormation::Stack
+        Properties:
+            TemplateURL: https://tobuck-cf.s3-us-west-2.amazonaws.com/cloudformation/ecs-cluster.yaml
+            Parameters:
+                EnvironmentName: !Ref AWS::StackName
+                InstanceType: t2.micro
+                ClusterSize: 4
+                VPC: !GetAtt VPC.Outputs.VPC
+                SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
+                Subnets: !GetAtt VPC.Outputs.PrivateSubnets
+
+    LifecycleHook:
+        Type: AWS::CloudFormation::Stack
+        Properties:
+            TemplateURL: https://tobuck-cf.s3-us-west-2.amazonaws.com/cloudformation/lifecyclehook.yaml
+            Parameters:
+                Cluster: !GetAtt ECS.Outputs.Cluster
+                ECSAutoScalingGroupName: !GetAtt ECS.Outputs.ECSAutoScalingGroupName
+
+Outputs:
+
+    LoadBalancerUrl:
+        Description: The URL endpoint for the ALB
+        Value: !Join ["", [ !GetAtt ALB.Outputs.LoadBalancerUrl, "/" ]]
