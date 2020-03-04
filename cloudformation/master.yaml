@@ -21,15 +21,13 @@ Resources:
                 PublicSubnet2CIDR:  10.0.16.0/21
                 PrivateSubnet1CIDR: 10.0.24.0/21
                 PrivateSubnet2CIDR: 10.0.32.0/21
-
-   SecurityGroups:
+    SecurityGroups:
         Type: AWS::CloudFormation::Stack
         Properties:
             TemplateURL: https://tobuck-cf.s3-us-west-2.amazonaws.com/cloudformation/security-groups.yaml
             Parameters:
                 EnvironmentName: !Ref AWS::StackName
                 VPC: !GetAtt VPC.Outputs.VPC
-
     ALB:
         Type: AWS::CloudFormation::Stack
         Properties:
@@ -39,7 +37,6 @@ Resources:
                 VPC: !GetAtt VPC.Outputs.VPC
                 Subnets: !GetAtt VPC.Outputs.PublicSubnets
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.LoadBalancerSecurityGroup
-
     ECS:
         Type: AWS::CloudFormation::Stack
         Properties:
@@ -51,7 +48,6 @@ Resources:
                 VPC: !GetAtt VPC.Outputs.VPC
                 SecurityGroup: !GetAtt SecurityGroups.Outputs.ECSHostSecurityGroup
                 Subnets: !GetAtt VPC.Outputs.PrivateSubnets
-
     LifecycleHook:
         Type: AWS::CloudFormation::Stack
         Properties:
