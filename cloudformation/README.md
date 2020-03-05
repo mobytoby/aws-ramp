@@ -34,6 +34,12 @@ The ECS instances should also appear in the Managed Instances section of the EC2
 
 ## Creating the Stack
 
+Before creating, ensure thet all CF Templates (aside from master.yaml) are in an S3 bucket in which 
+you have access. Does not have to be public access, but the user running the CLI command below must
+at least have read access.
+
+Once the cf templates are uploaded, ensure 
+
 Using the AWS CLI, execute the following command:
 
 `aws cloudformation create-stack --capabilities CAPABILITY_NAMED_IAM --template-body file://master.yaml --stack-name mystackname`
