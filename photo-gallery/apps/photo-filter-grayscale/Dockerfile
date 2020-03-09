@@ -2,6 +2,8 @@
 FROM golang:1.14 AS builder
 WORKDIR /app/
 COPY . .
+RUN go env -w GOPROXY=direct
+RUN go env -w GOPRIVATE=*.github.com
 RUN CGO_ENABLED=0 go build -o app .
 
 # final stage
