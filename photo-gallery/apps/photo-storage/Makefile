@@ -15,7 +15,7 @@ build:
 	--build-arg VENDOR="${VENDOR}" .
 
 run:
-	docker run --rm -p 8080:8080 ${VENDOR}/${IMAGE}
+	docker run --rm -p 8080:8080 -env-file=.env ${VENDOR}/${IMAGE} 
 
 tag:
 	docker tag ${VENDOR}/${IMAGE}:latest ${ECR_REPO}:latest

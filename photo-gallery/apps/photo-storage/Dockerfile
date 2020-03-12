@@ -8,7 +8,7 @@ RUN go get -d -v
 RUN CGO_ENABLED=0 GOOS=linux go build -a -installsuffix cgo -o app .
 
 # final stage
-FROM scratch
+FROM alpine:latest
 WORKDIR /root/
 COPY --from=builder /go/src/github.com/mobytoby/photo-api/app .
 

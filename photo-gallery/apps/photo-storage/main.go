@@ -72,7 +72,7 @@ func main() {
 		c.JSON(http.StatusOK, url)
 	})
 
-	router.Run(":8080")
+	router.Run(":80")
 }
 
 func check(e error) {
