@@ -2,7 +2,6 @@ package main
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"mime/multipart"
 	"net/http"
@@ -11,12 +10,18 @@ import (
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 )
 
+type Photo struct {
+	Url  string
+	Name string
+}
+
 func main() {
 	router := gin.Default()
-
+	router.Use(cors.Default())
 	router.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Welcome to the photo storage API")
 	})
@@ -46,16 +51,17 @@ func main() {
 			aws.NewConfig().WithRegion("us-west-2"),
 		)
 		res, err := svc.ListObjects(&s3.ListObjectsInput{
-			Bucket: aws.String(bucket),
+			Bucket:  aws.String(bucket),
+			MaxKeys: aws.Int64(50),
 		})
 		check(err)
-		urls := make([]string, len(res.Contents))
+		urls := make([]Photo, 0, len(res.Contents))
 		check(err)
 		for i := 0; i < len(res.Contents); i++ {
 			key := res.Contents[i].Key
 			urlStr, err := getPresignedURL(svc, bucket, key)
 			check(err)
-			urls[i] = urlStr
+			urls = append(urls, Photo{Url: urlStr, Name: *key})
 		}
 		c.JSON(http.StatusOK, urls)
 	})
@@ -72,11 +78,10 @@ func main() {
 		c.JSON(http.StatusOK, url)
 	})
 
-	router.Run(":80")
+	router.Run(":8080")
 }
 
 func check(e error) {
-	fmt.Println(e)
 	if e != nil {
 		panic(e)
 	}
