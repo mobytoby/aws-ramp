@@ -5,32 +5,30 @@ import { Photo } from '../entities/photo';
 
 @Component({
   selector: 'app-gallery',
-  template: `
-    <div class="demo-content">
-      <h3>Masonry Image List</h3>
-      <div class="demo-content--row">
-        <button
-          mdc-button
-          (click)="demomasonry.textProtection = !demomasonry.textProtection"
-        >
-          Text Protection: {{ demomasonry.textProtection ? "On" : "Off" }}
-        </button>
-      </div>
-      <mdc-image-list #demomasonry [masonry]="true" class="masonry-image-list">
-        <mdc-image-list-item *ngFor="let item of photos | async">
-          <img mdcImageListImage src="{{ item.Url }}" />
-          <mdc-image-list-supporting>
-            <span mdcImageListLabel>Text label</span>
-          </mdc-image-list-supporting>
-        </mdc-image-list-item>
-      </mdc-image-list>
-    </div>
-  `,
+  templateUrl: 'gallery.component.html',
   styleUrls: ['./gallery.component.scss']
 })
 export class GalleryComponent implements OnInit {
   photos: Observable<Photo> = new Observable<Photo>();
+  images = Array.from(Array(15), (x, i) => i);
 
+  masonryImages = [
+    { image: 'https://material-components-web.appspot.com/images/photos/3x2/16.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/2x3/1.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/3x2/1.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/2x3/2.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/2x3/3.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/3x2/2.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/2x3/4.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/3x2/3.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/2x3/5.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/3x2/4.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/2x3/6.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/3x2/5.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/2x3/7.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/3x2/6.jpg' },
+    { image: 'https://material-components-web.appspot.com/images/photos/3x2/7.jpg' },
+  ];
   constructor(private svc: ApiService) {}
 
   ngOnInit(): void {
