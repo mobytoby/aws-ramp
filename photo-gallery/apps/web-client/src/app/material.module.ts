@@ -7,6 +7,7 @@ import {
   MdcImageListModule,
   MdcListModule,
   MdcRippleModule,
+  MdcTabBarModule,
   MdcTypographyModule
 } from '@angular-mdc/web';
 
@@ -19,7 +20,8 @@ import {
     MdcImageListModule,
     MdcListModule,
     MdcRippleModule,
-    MdcTypographyModule
+    MdcTabBarModule,
+    MdcTypographyModule,
   ]
 })
 export class MaterialModule { }

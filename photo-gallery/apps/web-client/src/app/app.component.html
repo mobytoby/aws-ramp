@@ -1,1 +1,9 @@
-<app-gallery></app-gallery>
+<mdc-tab-bar (activated)="logTab($event)" [activeTabIndex]="0" useAutomaticActivation>
+  <mdc-tab-scroller>
+    <mdc-tab *ngFor="let tab of tabs" [label]="tab.label" [icon]="tab.icon"></mdc-tab>
+  </mdc-tab-scroller>
+</mdc-tab-bar>
+<div class="" *ngIf="currentTab==0"><app-upload ></app-upload></div>
+<div class="" *ngIf="currentTab==1"><app-gallery></app-gallery></div>
+
+
