@@ -2,54 +2,53 @@ package main
 
 import (
 	"bytes"
-	"encoding/json"
 	"errors"
 	"image"
 	"image/gif"
 	"image/jpeg"
 	"image/png"
-	"io"
 	"io/ioutil"
 	"log"
+	"mime/multipart"
 	"net/http"
 	"os"
 
 	"github.com/disintegration/imaging"
-	"github.com/gorilla/mux"
+	"github.com/gin-contrib/cors"
+	"github.com/gin-gonic/gin"
 )
 
 func main() {
+	router := gin.Default()
+	router.Use(cors.Default())
 
-	// Test using:
-	// curl --request POST --data-binary 'data=@filename.jpg' -H "Content-Type: image/jpeg" http://localhost:3002/greyscale --output - | imgcat
+	router.GET("/", func(c *gin.Context) {
+		c.String(http.StatusOK, "Welcome to the grey scale filter API")
+	})
+
+	router.GET("/healthcheck", func(c *gin.Context) {
+		c.JSON(http.StatusOK, "OK")
+	})
+
+	router.POST("/greyscale", func(c *gin.Context) {
+		file, err := c.FormFile("file")
+		check(err)
+		greyscale(c.Writer, file)
+	})
 
 	port := os.Getenv("API_PORT")
 	if port == "" {
 		port = "3002"
 	}
 
-	var router = mux.NewRouter()
-	router.HandleFunc("/", welcome).Methods("GET")
-	router.HandleFunc("/healthcheck", healthCheck).Methods("GET")
-	router.HandleFunc("/greyscale", greyscale).Methods("POST")
-
-	log.Println("Photo Filter API listening on http://localhost:" + port)
-	log.Fatal(http.ListenAndServe(":"+port, router))
+	router.Run(":3002")
 }
 
-func welcome(w http.ResponseWriter, r *http.Request) {
-	io.WriteString(w, "Welcome to the photo-filter API")
-}
-
-func healthCheck(w http.ResponseWriter, r *http.Request) {
-	json.NewEncoder(w).Encode("OK")
-}
-
-func greyscale(w http.ResponseWriter, r *http.Request) {
+func greyscale(w http.ResponseWriter, file *multipart.FileHeader) {
 	const MaxMemory = 20 * 1024 * 1024 // 20MB
-
-	defer r.Body.Close()
-	body, err := ioutil.ReadAll(r.Body)
+	f, err := file.Open()
+	defer f.Close()
+	body, err := ioutil.ReadAll(f)
 	if err != nil {
 		log.Printf("Error reading body: %v", err)
 		http.Error(w, "can't read body", http.StatusBadRequest)
@@ -87,5 +86,11 @@ func greyscale(w http.ResponseWriter, r *http.Request) {
 		err = gif.Encode(w, img, nil)
 	default:
 		err = errors.New("Unsupported file type")
+	}
+}
+
+func check(e error) {
+	if e != nil {
+		panic(e)
 	}
 }
