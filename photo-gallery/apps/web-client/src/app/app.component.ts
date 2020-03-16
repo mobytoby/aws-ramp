@@ -1,5 +1,4 @@
 import { Component, ViewEncapsulation } from '@angular/core';
-import { MdcTabActivatedEvent } from '@angular-mdc/web';
 
 @Component({
   selector: 'app-root',
@@ -32,9 +31,6 @@ export class AppComponent {
     { image: 'https://material-components-web.appspot.com/images/photos/3x2/7.jpg' },
   ];
 
-  logTab(event: MdcTabActivatedEvent): void {
-    this.currentTab = event.index;
-  }
 
   addTab(): void {
     this.tabs.push({

@@ -2,18 +2,66 @@
   <div class="container">
     <div class="columns">
       <div class="column">
-        <div class="notification">
-          <ngx-dropzone [multiple]="false">
-            <ngx-dropzone-label>Drop or click to upload</ngx-dropzone-label>
-          </ngx-dropzone>
-        </div>
+        <nav class="panel">
+          <p class="panel-heading">
+            File Upload
+          </p>
+          <div class="panel-block">
+            <p class="control">
+              <ngx-dropzone [multiple]="false" (change)="onSelect($event)">
+                <ngx-dropzone-label>Drop or click to upload</ngx-dropzone-label>
+                <ngx-dropzone-image-preview
+                  ngProjectAs="ngx-dropzone-preview"
+                  *ngFor="let f of files"
+                  [file]="f"
+                >
+                  <ngx-dropzone-label
+                    >{{ f.name }} ({{ f.type }})</ngx-dropzone-label
+                  >
+                </ngx-dropzone-image-preview>
+              </ngx-dropzone>
+            </p>
+          </div>
+          <div class="panel-block">
+            <div class="field is-grouped">
+              <p class="control">
+                <a class="button is-link" (click)="onSubmit()">Submit</a>
+              </p>
+              <p class="control">
+                <a class="button is-danger" (click)="onCancel($event)">Cancel</a>
+              </p>
+            </div>
+          </div>
+        </nav>
       </div>
       <div class="column">
-
+        <nav class="panel">
+          <p class="panel-heading">
+            Photo filters
+          </p>
+          <label class="panel-block">
+            <input type="checkbox" [(ngModel)]="applyFilter">
+            Grey Scale
+          </label>
+          <label class="panel-block">
+            {{applyFilter}}
+          </label>
+          <label class="panel-block" disabled>
+            <input type="checkbox" disabled>
+            Cartoonizer
+          </label>
+          <label class="panel-block" disabled>
+            <input type="checkbox" disabled>
+            Saturation
+          </label>
+          <label class="panel-block" disabled>
+            <input type="checkbox" disabled>
+            Trim
+          </label>
+        </nav>
       </div>
     </div>
   </div>
 </section>
 
-<div class="container">
-</div>
+<div class="container"></div>

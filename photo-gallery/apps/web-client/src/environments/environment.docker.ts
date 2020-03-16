@@ -4,9 +4,6 @@
 
 export const environment = {
   production: false,
-  bucketName: 's3-photos-undefined-28670871-e0b4-47f7-bfaf-2507402e2e5a',
-  storageUrl: 'http://localhost:8080/',
-  filterUrl: 'http://localhost:3002/greyscale',
 };
 
 /*

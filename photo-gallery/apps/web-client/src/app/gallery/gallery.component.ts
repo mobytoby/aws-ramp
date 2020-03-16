@@ -32,6 +32,6 @@ export class GalleryComponent implements OnInit {
   constructor(private svc: ApiService) {}
 
   ngOnInit(): void {
-    this.photos = this.svc.Photos;
+    this.photos = this.svc.photos;
   }
 }

@@ -1,12 +1,15 @@
-import { BrowserModule } from '@angular/platform-browser';
 import { NgModule } from '@angular/core';
+import { HttpClientModule } from '@angular/common/http';
+import { FormsModule } from '@angular/forms';
+import { BrowserModule } from '@angular/platform-browser';
+
 import { NgxDropzoneModule } from 'ngx-dropzone';
+import { NgxMasonryModule } from 'ngx-masonry';
 
 import { AppComponent } from './app.component';
 import { BrowserAnimationsModule } from '@angular/platform-browser/animations';
 import { GalleryComponent } from './gallery/gallery.component';
-import { HttpClientModule } from '@angular/common/http';
-import { MaterialModule } from './material.module';
+// import { MaterialModule } from './material.module';
 import { UploadComponent } from './upload/upload.component';
 
 @NgModule({
@@ -14,9 +17,10 @@ import { UploadComponent } from './upload/upload.component';
   imports: [
     BrowserAnimationsModule,
     BrowserModule,
+    FormsModule,
     HttpClientModule,
-    MaterialModule,
-    NgxDropzoneModule
+    NgxDropzoneModule,
+    NgxMasonryModule,
   ],
   providers: [],
   bootstrap: [AppComponent]
