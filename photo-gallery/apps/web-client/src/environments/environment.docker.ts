@@ -4,6 +4,9 @@
 
 export const environment = {
   production: false,
+  bucketName: 'tobuck-aws-ramp',
+  storageUrl: 'http://localhost:3001',
+  filterUrl: 'http://localhost:3002/greyscale',
 };
 
 /*

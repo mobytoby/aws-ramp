@@ -30,7 +30,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vendor=$VENDOR \
       org.label-schema.version=$VERSION \
       org.label-schema.docker.schema-version="1.0" \
-      org.label-schema.docker.cmd="docker run --rm -p 8080:80 mobytoby/photo-storage-api"
+      org.label-schema.docker.cmd="docker run --rm -p 3001:3001 mobytoby/photo-storage-api"
 
 CMD ["./app"]
 EXPOSE 3001

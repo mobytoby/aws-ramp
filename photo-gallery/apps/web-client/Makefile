@@ -1,5 +1,5 @@
 VENDOR := mobytoby
-IMAGE := photo-filter-grayscale
+IMAGE := web-client
 VERSION := $(shell git rev-parse HEAD)
 BUILD_DATE := $(shell date -R)
 VCS_URL := $(shell basename `git rev-parse --show-toplevel`)
@@ -15,7 +15,7 @@ build:
 	--build-arg VENDOR="${VENDOR}" .
 
 run:
-	docker run --rm -p 3002:3002 ${VENDOR}/${IMAGE} --env-file=../../aws.env
+	docker run --rm -p 3000:80 --env-file=../../aws.env ${VENDOR}/${IMAGE}
 
 tag:
 	docker tag ${VENDOR}/${IMAGE}:latest ${ECR_REPO}:latest

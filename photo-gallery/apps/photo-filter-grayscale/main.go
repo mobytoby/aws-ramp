@@ -11,7 +11,6 @@ import (
 	"log"
 	"mime/multipart"
 	"net/http"
-	"os"
 
 	"github.com/disintegration/imaging"
 	"github.com/gin-contrib/cors"
@@ -35,11 +34,6 @@ func main() {
 		check(err)
 		greyscale(c.Writer, file)
 	})
-
-	port := os.Getenv("API_PORT")
-	if port == "" {
-		port = "3002"
-	}
 
 	router.Run(":3002")
 }

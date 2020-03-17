@@ -28,7 +28,7 @@ LABEL org.label-schema.build-date=$BUILD_DATE \
       org.label-schema.vendor=$VENDOR \
       org.label-schema.version=$VERSION \
       org.label-schema.docker.schema-version="1.0" \
-      org.label-schema.docker.cmd="docker run --rm -p 8080:80 photo-filter-grayscale"
+      org.label-schema.docker.cmd="docker run --rm -p 8080:80 mobytoby/photo-filter-grayscale"
 
 CMD ["./app"]
 EXPOSE 3002

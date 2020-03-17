@@ -16,7 +16,7 @@ RUN npm install -g @angular/cli@9.0.5
 COPY . /app
 
 # generate build
-RUN ng build --output-path=dist
+RUN ng build --output-path=dist --configuration=docker
 
 ############
 ### prod ###

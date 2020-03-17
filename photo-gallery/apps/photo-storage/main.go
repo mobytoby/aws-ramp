@@ -78,7 +78,7 @@ func main() {
 		c.JSON(http.StatusOK, url)
 	})
 
-	router.Run(":8080")
+	router.Run(":3001")
 }
 
 func check(e error) {
