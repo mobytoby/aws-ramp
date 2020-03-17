@@ -1,7 +1,5 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, Output, EventEmitter } from '@angular/core';
 import { ApiService } from '../api.service';
-import { Observable, of } from 'rxjs';
-import { map } from 'rxjs/operators';
 
 @Component({
   selector: 'app-upload',
@@ -12,6 +10,7 @@ import { map } from 'rxjs/operators';
   ]
 })
 export class UploadComponent implements OnInit {
+  @Output() uploaded = new EventEmitter<boolean>();
   constructor(private svc: ApiService) {}
   files: File[] = [];
   applyFilter = false;
@@ -27,21 +26,33 @@ export class UploadComponent implements OnInit {
 
   onSubmit() {
     const file = this.files[0];
-    const source = this.applyFilter ?
-      this.svc.applyGreyscale(file) :
-      of(file);
-    source.pipe(
-      map(f => this.svc.storeFile(f))
-    ).subscribe(
-      (res) => this.onSuccess(res),
-      (err) => console.error(err),
-    );
+    if (this.applyFilter) {
+      this.svc.applyGreyscale(file).subscribe (
+        (res) => {
+          const gsImage = new File([res.body], file.name, {type: file.type});
+          this.handleFilterResponse(gsImage);
+        },
+        (err) => console.log(err)
+      );
+    } else {
+      this.handleFilterResponse(file);
+    }
     this.files = [];
+  }
+
+  handleFilterResponse(file: File) {
+    this.svc.storeFile(file).subscribe(
+      (res) =>
+      {
+        console.log(res);
+        this.uploaded.emit(true);
+      },
+      (err) => console.error(err)
+    );
   }
 
   onSuccess(res: any) {
     this.files = [];
-    alert('Successfully uploaded');
   }
 
   ngOnInit(): void {}

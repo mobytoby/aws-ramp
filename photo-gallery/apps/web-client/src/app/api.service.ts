@@ -1,9 +1,10 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders, HttpResponse } from '@angular/common/http';
 
 import { environment } from '../environments/environment';
 import { Photo } from './entities/photo';
 import { map } from 'rxjs/operators';
+import { Observable } from 'rxjs';
 
 @Injectable({
   providedIn: 'root'
@@ -15,18 +16,20 @@ export class ApiService {
 
   constructor(private http: HttpClient) { }
 
-  get photos() {
+  getPhotos() {
     return this.http.get<Photo>(`${this.storageUrl}/bucket/${this.bucketName}/photos`);
   }
 
-  applyGreyscale(file: File) {
-    return this.http.post<File>(this.filterUrl, file);
+  applyGreyscale(file: File): Observable<HttpResponse<Blob>> {
+    const formData = new FormData();
+    formData.append('file', file);
+    return this.http.post(this.filterUrl, formData, { observe: 'response', responseType: 'blob'});
   }
 
   storeFile(file: File) {
     const filename = file.name;
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post<File>(`${this.storageUrl}/bucket/${this.bucketName}/photos/${filename}`, formData);
+    return this.http.post<any>(`${this.storageUrl}/bucket/${this.bucketName}/photos/${filename}`, formData);
   }
 }

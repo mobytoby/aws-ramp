@@ -5,12 +5,6 @@ import { Component, ViewEncapsulation } from '@angular/core';
   templateUrl: './app.component.html'
 })
 export class AppComponent {
-  currentTab = 0;
-  tabs = [
-    { label: 'Uploads', icon: 'disk' },
-    { label: 'Gallery', icon: 'picture' },
-  ];
-
   images = Array.from(Array(15), (x, i) => i);
 
   masonryImages = [
@@ -30,12 +24,4 @@ export class AppComponent {
     { image: 'https://material-components-web.appspot.com/images/photos/3x2/6.jpg' },
     { image: 'https://material-components-web.appspot.com/images/photos/3x2/7.jpg' },
   ];
-
-
-  addTab(): void {
-    this.tabs.push({
-      label: 'New Tab',
-      icon: 'hotel'
-    });
-  }
 }

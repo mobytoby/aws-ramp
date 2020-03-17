@@ -1,6 +1,5 @@
 
-<app-upload ></app-upload>
-<hr />
-<app-gallery></app-gallery>
+<app-upload (uploaded)="gallery.refresh()" ></app-upload>
+<app-gallery #gallery></app-gallery>
 
 
