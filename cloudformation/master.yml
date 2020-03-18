@@ -22,11 +22,14 @@ Parameters:
     Type: String
 
 Resources:
+  ECR:
+    Type: AWS::CloudFormation::Stack
+    Properties:
+      TemplateURL: !Sub https://${BucketName}.s3-${BucketRegion}.amazonaws.com/${BucketFolder}/ecr-repo.yml
   VPC:
     Type: AWS::CloudFormation::Stack
     Properties:
-      #Hosted here, but a copy is in this folder
-      TemplateURL: !Sub https://${BucketName}.s3-${BucketRegion}.amazonaws.com/${BucketFolder}/vpc.yaml
+      TemplateURL: !Sub https://${BucketName}.s3-${BucketRegion}.amazonaws.com/${BucketFolder}/vpc.yml
       Parameters:
         EnvironmentName: !Ref AWS::StackName
         VpcCIDR: 10.0.0.0/16
@@ -37,14 +40,14 @@ Resources:
   SecurityGroups:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3-${BucketRegion}.amazonaws.com/${BucketFolder}/security-groups.yaml
+      TemplateURL: !Sub https://${BucketName}.s3-${BucketRegion}.amazonaws.com/${BucketFolder}/security-groups.yml
       Parameters:
         EnvironmentName: !Ref AWS::StackName
         VPC: !GetAtt VPC.Outputs.VPC
   ALB:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3-${BucketRegion}.amazonaws.com/${BucketFolder}/load-balancers.yaml
+      TemplateURL: !Sub https://${BucketName}.s3-${BucketRegion}.amazonaws.com/${BucketFolder}/load-balancers.yml
       Parameters:
         EnvironmentName: !Ref AWS::StackName
         VPC: !GetAtt VPC.Outputs.VPC
@@ -53,7 +56,7 @@ Resources:
   ECS:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3-${BucketRegion}.amazonaws.com/${BucketFolder}/ecs-cluster.yaml
+      TemplateURL: !Sub https://${BucketName}.s3-${BucketRegion}.amazonaws.com/${BucketFolder}/ecs-cluster.yml
       Parameters:
         EnvironmentName: !Ref AWS::StackName
         InstanceType: t2.micro
@@ -64,7 +67,7 @@ Resources:
   LifecycleHook:
     Type: AWS::CloudFormation::Stack
     Properties:
-      TemplateURL: !Sub https://${BucketName}.s3-${BucketRegion}.amazonaws.com/${BucketFolder}/lifecyclehook.yaml
+      TemplateURL: !Sub https://${BucketName}.s3-${BucketRegion}.amazonaws.com/${BucketFolder}/lifecyclehook.yml
       Parameters:
         Cluster: !GetAtt ECS.Outputs.Cluster
         ECSAutoScalingGroupName: !GetAtt ECS.Outputs.ECSAutoScalingGroupName

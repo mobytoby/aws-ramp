@@ -1,0 +1,21 @@
+Resources:
+  EcrWebClientRepo:
+    Type: 'AWS::ECR::Repository'
+    Properties:     
+        RepositoryName: "photogallery/web-client"
+  EcrPhotoStorageRepo:
+    Type: 'AWS::ECR::Repository'
+    Properties:     
+        RepositoryName: "photogallery/photo-storage-api"
+  EcrPhotoFilterRepo:
+    Type: 'AWS::ECR::Repository'
+    Properties:     
+        RepositoryName: "photogallery/photo-filter-grayscale"
+Outputs:    
+  WebClientArn:
+    Value: !GetAtt EcrWebClientRepo.Arn
+  PhotoStorageArn:
+    Value: !GetAtt EcrPhotoStorageRepo.Arn
+  PhotoFilterArn:
+    Value: !GetAtt EcrPhotoFilterRepo.Arn
+    

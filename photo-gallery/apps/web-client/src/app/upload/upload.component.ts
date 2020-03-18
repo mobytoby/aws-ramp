@@ -4,10 +4,7 @@ import { ApiService } from '../api.service';
 @Component({
   selector: 'app-upload',
   templateUrl: './upload.component.html',
-  styleUrls: [
-    './upload.component.scss',
-    // './debug.scss',
-  ]
+  styleUrls: ['./upload.component.scss']
 })
 export class UploadComponent implements OnInit {
   @Output() uploaded = new EventEmitter<boolean>();
@@ -26,21 +23,23 @@ export class UploadComponent implements OnInit {
 
   onSubmit() {
     const file = this.files[0];
+    // Feels like there should be a better way to do this.
+    // Like make a pipe of these filters and apply withouth the if
     if (this.applyFilter) {
       this.svc.applyGreyscale(file).subscribe (
         (res) => {
           const gsImage = new File([res.body], file.name, {type: file.type});
-          this.handleFilterResponse(gsImage);
+          this.storeFile(gsImage);
         },
         (err) => console.log(err)
       );
     } else {
-      this.handleFilterResponse(file);
+      this.storeFile(file);
     }
     this.files = [];
   }
 
-  handleFilterResponse(file: File) {
+  storeFile(file: File) {
     this.svc.storeFile(file).subscribe(
       (res) =>
       {
