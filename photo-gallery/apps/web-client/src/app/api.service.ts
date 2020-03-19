@@ -23,7 +23,7 @@ export class ApiService {
   applyGreyscale(file: File): Observable<HttpResponse<Blob>> {
     const formData = new FormData();
     formData.append('file', file);
-    return this.http.post(this.filterUrl, formData, { observe: 'response', responseType: 'blob'});
+    return this.http.post(`${this.filterUrl}/greyscale`, formData, { observe: 'response', responseType: 'blob'});
   }
 
   storeFile(file: File) {
