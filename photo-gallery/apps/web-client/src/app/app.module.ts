@@ -16,7 +16,7 @@ import { UploadComponent } from './upload/upload.component';
   declarations: [AppComponent, GalleryComponent, UploadComponent],
   imports: [
     BrowserAnimationsModule,
-    BrowserModule,
+    BrowserModule.withServerTransition({ appId: 'serverApp' }),
     FormsModule,
     HttpClientModule,
     NgxDropzoneModule,

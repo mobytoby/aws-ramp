@@ -1,9 +1,10 @@
 # base image
-FROM node:13.8.0 as build
+FROM node:13.8.0 as base
 
 # set working directory
 WORKDIR /app
 
+FROM base as build
 # add `/app/node_modules/.bin` to $PATH
 ENV PATH /app/node_modules/.bin:$PATH
 
@@ -16,20 +17,22 @@ RUN npm install -g @angular/cli@9.0.5
 COPY . /app
 
 # generate build
-RUN ng build --prod --output-path=dist
+RUN npm run build:ssr
 
 ############
 ### prod ###
 ############
 
 # base image
-FROM nginx:1.17.9-alpine
+FROM base as prod
 
 # copy artifact build from the 'build environment'
-COPY --from=build /app/dist /usr/share/nginx/html
+COPY --from=build /app/dist /app/dist
+COPY --from=build /app/package.json /app/
 
-# expose port 80
-EXPOSE 80
+ENV NODE_ENV "production"
+ENV PORT 3000
 
-# run nginx
-CMD ["nginx", "-g", "daemon off;"]
+EXPOSE 3000
+
+CMD ["npm", "run ", "serve:ssr"]

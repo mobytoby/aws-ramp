@@ -22,17 +22,18 @@ type Photo struct {
 func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
-	router.GET("/", func(c *gin.Context) {
+	api := router.Group("/api")
+	api.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Welcome to the photo storage API")
 	})
 
-	router.GET("/healthcheck", func(c *gin.Context) {
+	api.GET("/healthcheck", func(c *gin.Context) {
 		c.JSON(http.StatusOK, "OK")
 	})
 
 	// Set a lower memory limit for multipart forms (default is 32 MiB)
 	router.MaxMultipartMemory = 8 << 20 // 8 MiB
-	router.POST("/bucket/:bucketId/photos/:photoName", func(c *gin.Context) {
+	api.POST("/bucket/:bucketId/photos/:photoName", func(c *gin.Context) {
 		// single file
 		bucketID := c.Param("bucketId")
 		photoName := c.Param("photoName")
@@ -44,7 +45,7 @@ func main() {
 		c.JSON(http.StatusOK, res)
 	})
 
-	router.GET("/bucket/:bucketId/photos", func(c *gin.Context) {
+	api.GET("/bucket/:bucketId/photos", func(c *gin.Context) {
 		bucket := c.Param("bucketId")
 		svc := s3.New(
 			session.Must(session.NewSession()),
@@ -66,7 +67,7 @@ func main() {
 		c.JSON(http.StatusOK, urls)
 	})
 
-	router.GET("/bucket/:bucketId/photos/:photoName", func(c *gin.Context) {
+	api.GET("/bucket/:bucketId/photos/:photoName", func(c *gin.Context) {
 		bucket := c.Param("bucketId")
 		key := c.Param("photoName")
 		svc := s3.New(
