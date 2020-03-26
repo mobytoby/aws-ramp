@@ -20,16 +20,17 @@ import (
 func main() {
 	router := gin.Default()
 	router.Use(cors.Default())
+	api := router.Group("/filter")
 
-	router.GET("/", func(c *gin.Context) {
+	api.GET("/", func(c *gin.Context) {
 		c.String(http.StatusOK, "Welcome to the grey scale filter API")
 	})
 
-	router.GET("/healthcheck", func(c *gin.Context) {
+	api.GET("/healthcheck", func(c *gin.Context) {
 		c.JSON(http.StatusOK, "OK")
 	})
 
-	router.POST("/greyscale", func(c *gin.Context) {
+	api.POST("/greyscale", func(c *gin.Context) {
 		file, err := c.FormFile("file")
 		check(err)
 		greyscale(c.Writer, file)
