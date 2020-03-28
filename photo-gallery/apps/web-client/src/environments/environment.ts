@@ -5,8 +5,8 @@
 export const environment = {
   production: false,
   bucketName: 'tobuck-aws-ramp',
-  storageUrl: 'http://localhost:3001',
-  filterUrl: 'http://localhost:3002',
+  storageUrl: 'http://alb-photo-gallery-429388317.us-west-2.elb.amazonaws.com/storage',
+  filterUrl: 'http://alb-photo-gallery-429388317.us-west-2.elb.amazonaws.com/filter',
 };
 
 /*

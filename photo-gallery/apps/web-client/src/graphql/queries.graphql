@@ -1,0 +1,22 @@
+# this is an auto generated file. This will be overwritten
+query GetPhoto($id: ID!) {
+  getPhoto(id: $id) {
+    id
+    name
+    image
+  }
+}
+query ListPhotos(
+  $filter: ModelPhotoFilterInput
+  $limit: Int
+  $nextToken: String
+) {
+  listPhotos(filter: $filter, limit: $limit, nextToken: $nextToken) {
+    items {
+      id
+      name
+      image
+    }
+    nextToken
+  }
+}

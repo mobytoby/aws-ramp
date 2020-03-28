@@ -1,5 +1,6 @@
 import { Component, OnInit, Output, EventEmitter } from '@angular/core';
-import { ApiService } from '../api.service';
+import { APIService } from '../api.service';
+import { StorageService } from '../storage.service';
 
 @Component({
   selector: 'app-upload',
@@ -8,7 +9,10 @@ import { ApiService } from '../api.service';
 })
 export class UploadComponent implements OnInit {
   @Output() uploaded = new EventEmitter<boolean>();
-  constructor(private svc: ApiService) {}
+  constructor(
+    private apiSvc: APIService,
+    private storageSvc: StorageService
+  ) {}
   files: File[] = [];
   applyFilter = false;
   onSelect(event) {
@@ -21,33 +25,16 @@ export class UploadComponent implements OnInit {
     this.files = [];
   }
 
+  async onImageUploaded(e) {
+    console.log(e);
+  }
+
   onSubmit() {
     const file = this.files[0];
-    // Feels like there should be a better way to do this.
-    // Like make a pipe of these filters and apply withouth the if
-    if (this.applyFilter) {
-      this.svc.applyGreyscale(file).subscribe (
-        (res) => {
-          const gsImage = new File([res.body], file.name, {type: file.type});
-          this.storeFile(gsImage);
-        },
-        (err) => console.log(err)
-      );
-    } else {
-      this.storeFile(file);
-    }
     this.files = [];
   }
 
   storeFile(file: File) {
-    this.svc.storeFile(file).subscribe(
-      (res) =>
-      {
-        console.log(res);
-        this.uploaded.emit(true);
-      },
-      (err) => console.error(err)
-    );
   }
 
   onSuccess(res: any) {

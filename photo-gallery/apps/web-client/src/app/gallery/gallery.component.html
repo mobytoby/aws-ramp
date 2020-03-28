@@ -1,7 +1,4 @@
-<section class="section">
-  <ngx-masonry [useImagesLoaded]="true">
-    <div ngxMasonryItem class="masonry-item" *ngFor="let item of photos|async">
-      <img src="{{item.Url}}" alt="">
-   </div>
-  </ngx-masonry>
-</section>
+<div class="mt-3">
+  <ngx-masonry-gallery [width]='200' [images]="photoUrls|async"></ngx-masonry-gallery>
+</div>
+

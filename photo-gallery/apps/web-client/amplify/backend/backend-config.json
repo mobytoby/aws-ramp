@@ -1,0 +1,33 @@
+{
+	"auth": {
+		"photogalleryweb5a55f420": {
+			"service": "Cognito",
+			"providerPlugin": "awscloudformation",
+			"dependsOn": [],
+			"customAuth": false
+		}
+	},
+	"api": {
+		"photogalleryapi": {
+			"service": "AppSync",
+			"providerPlugin": "awscloudformation",
+			"output": {
+				"authConfig": {
+					"additionalAuthenticationProviders": [],
+					"defaultAuthentication": {
+						"authenticationType": "AMAZON_COGNITO_USER_POOLS",
+						"userPoolConfig": {
+							"userPoolId": "authphotogalleryweb5a55f420"
+						}
+					}
+				}
+			}
+		}
+	},
+	"storage": {
+		"s32d22bc96": {
+			"service": "S3",
+			"providerPlugin": "awscloudformation"
+		}
+	}
+}

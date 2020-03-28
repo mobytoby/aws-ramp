@@ -1,64 +1,32 @@
-<section class="section has-background-light">
-  <div class="container">
-    <div class="columns">
-      <div class="column">
-        <nav class="panel">
-          <p class="panel-heading">
-            File Upload
-          </p>
-          <div class="panel-block">
-            <p class="control">
-              <ngx-dropzone [multiple]="false" (change)="onSelect($event)">
-                <ngx-dropzone-label>Drop or click to upload</ngx-dropzone-label>
-                <ngx-dropzone-image-preview
-                  ngProjectAs="ngx-dropzone-preview"
-                  *ngFor="let f of files"
-                  [file]="f"
-                >
-                </ngx-dropzone-image-preview>
-              </ngx-dropzone>
-            </p>
-          </div>
-          <div class="panel-block">
-            <div class="field is-grouped">
-              <p class="control">
-                <a class="button is-link" (click)="onSubmit()">Submit</a>
-              </p>
-              <p class="control">
-                <a class="button is-danger" (click)="onCancel($event)">Cancel</a>
-              </p>
-            </div>
-          </div>
-        </nav>
-      </div>
-      <div class="column">
-        <nav class="panel">
-          <p class="panel-heading">
-            Photo filters
-          </p>
-          <label class="panel-block">
-            <input type="checkbox" [(ngModel)]="applyFilter">
-            Grey Scale
-          </label>
-          <label class="panel-block">
-            {{applyFilter}}
-          </label>
-          <label class="panel-block" disabled>
-            <input type="checkbox" disabled>
-            Cartoonizer
-          </label>
-          <label class="panel-block" disabled>
-            <input type="checkbox" disabled>
-            Saturation
-          </label>
-          <label class="panel-block" disabled>
-            <input type="checkbox" disabled>
-            Trim
-          </label>
-        </nav>
-      </div>
+<div class="row">
+  <div class="col">
+    <div>
+      <amplify-photo-picker
+        path="image"
+        [storageOptions]="{'level': 'private'}"
+        (uploaded)="onImageUploaded($event)"
+      >
+      </amplify-photo-picker>
     </div>
   </div>
-</section>
-
-<div class="container"></div>
+  <div class="col">
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="" id="defaultCheck1">
+      <label class="form-check-label" for="defaultCheck1">
+        Greyscale
+      </label>
+    </div>
+    <div class="form-check">
+      <input class="form-check-input" type="checkbox" value="" id="defaultCheck2" disabled>
+      <label class="form-check-label" for="defaultCheck2">
+        Other
+      </label>
+    </div>
+  </div>
+</div>
+<div class="row mt-3">
+  <div class="col">
+    <button type="button" class="mr-1 btn btn-primary">Submit</button>
+    <button type="button" class="btn btn-secondary">Cancel</button>
+  </div>
+</div>
