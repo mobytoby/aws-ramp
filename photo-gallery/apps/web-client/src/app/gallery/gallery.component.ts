@@ -1,8 +1,16 @@
 import { Component, OnInit } from '@angular/core';
-import { Observable } from 'rxjs';
-import { map } from 'rxjs/operators';
-import { StorageService } from '../storage.service';
+import { Observable, from, forkJoin } from 'rxjs';
+import { map, flatMap } from 'rxjs/operators';
 import { IMasonryGalleryImage } from 'ngx-masonry-gallery';
+import { Storage } from 'aws-amplify';
+
+
+interface S3Object {
+  eTag: string;
+  key: string;
+  lastModified: Date;
+  size: number;
+}
 
 @Component({
   selector: 'app-gallery',
@@ -11,14 +19,25 @@ import { IMasonryGalleryImage } from 'ngx-masonry-gallery';
 })
 export class GalleryComponent implements OnInit {
   photoUrls: Observable<IMasonryGalleryImage[]> = new Observable<IMasonryGalleryImage[]>();
-  constructor(private svc: StorageService) {}
+  constructor() {}
 
   refresh() {
-    this.photoUrls = this.svc.getPhotos()
-      .pipe(map(photos => photos.map(photo => ({ imageUrl: photo.Url } as IMasonryGalleryImage))));
+    this.photoUrls = this.buildUrls();
   }
 
   ngOnInit(): void {
     this.refresh();
+  }
+
+  buildUrls(): Observable<IMasonryGalleryImage[]> {
+    const s3Urls$ = from<Promise<S3Object[]>>(Storage.list('image', { level: 'private'}))
+    .pipe(
+      map(s3Objects => s3Objects.map(obj => obj.key)),
+      map(keys => keys.map(key => from<Promise<string|object>>(Storage.get(key, { level: 'private' })))),
+      flatMap(objArray$ => forkJoin(objArray$)),
+    );
+    return s3Urls$.pipe(
+      map(urls => urls.map(url => ({ imageUrl: url } as IMasonryGalleryImage)))
+    );
   }
 }
