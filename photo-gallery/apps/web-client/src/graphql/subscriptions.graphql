@@ -1,22 +1,28 @@
 # this is an auto generated file. This will be overwritten
-subscription OnCreatePhoto {
-  onCreatePhoto {
+subscription OnCreateImageJob {
+  onCreateImageJob {
     id
     name
-    image
+    imageUrl
+    filters
+    isDone
   }
 }
-subscription OnUpdatePhoto {
-  onUpdatePhoto {
+subscription OnUpdateImageJob {
+  onUpdateImageJob {
     id
     name
-    image
+    imageUrl
+    filters
+    isDone
   }
 }
-subscription OnDeletePhoto {
-  onDeletePhoto {
+subscription OnDeleteImageJob {
+  onDeleteImageJob {
     id
     name
-    image
+    imageUrl
+    filters
+    isDone
   }
 }

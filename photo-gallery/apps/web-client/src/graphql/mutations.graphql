@@ -1,31 +1,37 @@
 # this is an auto generated file. This will be overwritten
-mutation CreatePhoto(
-  $input: CreatePhotoInput!
-  $condition: ModelPhotoConditionInput
+mutation CreateImageJob(
+  $input: CreateImageJobInput!
+  $condition: ModelImageJobConditionInput
 ) {
-  createPhoto(input: $input, condition: $condition) {
+  createImageJob(input: $input, condition: $condition) {
     id
     name
-    image
+    imageUrl
+    filters
+    isDone
   }
 }
-mutation UpdatePhoto(
-  $input: UpdatePhotoInput!
-  $condition: ModelPhotoConditionInput
+mutation UpdateImageJob(
+  $input: UpdateImageJobInput!
+  $condition: ModelImageJobConditionInput
 ) {
-  updatePhoto(input: $input, condition: $condition) {
+  updateImageJob(input: $input, condition: $condition) {
     id
     name
-    image
+    imageUrl
+    filters
+    isDone
   }
 }
-mutation DeletePhoto(
-  $input: DeletePhotoInput!
-  $condition: ModelPhotoConditionInput
+mutation DeleteImageJob(
+  $input: DeleteImageJobInput!
+  $condition: ModelImageJobConditionInput
 ) {
-  deletePhoto(input: $input, condition: $condition) {
+  deleteImageJob(input: $input, condition: $condition) {
     id
     name
-    image
+    imageUrl
+    filters
+    isDone
   }
 }

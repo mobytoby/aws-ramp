@@ -1,5 +1,7 @@
-type Photo @model {
+type ImageJob @model {
   id: ID!
   name: String!
-  image: String
+  imageUrl: String!
+  filters: [String]!
+  isDone: Boolean
 }

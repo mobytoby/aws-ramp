@@ -6,18 +6,22 @@ import API, { graphqlOperation } from "@aws-amplify/api";
 import { GraphQLResult } from "@aws-amplify/api/lib/types";
 import * as Observable from "zen-observable";
 
-export type CreatePhotoInput = {
+export type CreateImageJobInput = {
   id?: string | null;
   name: string;
-  image?: string | null;
+  imageUrl: string;
+  filters: Array<string | null>;
+  isDone?: boolean | null;
 };
 
-export type ModelPhotoConditionInput = {
+export type ModelImageJobConditionInput = {
   name?: ModelStringInput | null;
-  image?: ModelStringInput | null;
-  and?: Array<ModelPhotoConditionInput | null> | null;
-  or?: Array<ModelPhotoConditionInput | null> | null;
-  not?: ModelPhotoConditionInput | null;
+  imageUrl?: ModelStringInput | null;
+  filters?: ModelStringInput | null;
+  isDone?: ModelBooleanInput | null;
+  and?: Array<ModelImageJobConditionInput | null> | null;
+  or?: Array<ModelImageJobConditionInput | null> | null;
+  not?: ModelImageJobConditionInput | null;
 };
 
 export type ModelStringInput = {
@@ -59,23 +63,34 @@ export type ModelSizeInput = {
   between?: Array<number | null> | null;
 };
 
-export type UpdatePhotoInput = {
-  id: string;
-  name?: string | null;
-  image?: string | null;
+export type ModelBooleanInput = {
+  ne?: boolean | null;
+  eq?: boolean | null;
+  attributeExists?: boolean | null;
+  attributeType?: ModelAttributeTypes | null;
 };
 
-export type DeletePhotoInput = {
+export type UpdateImageJobInput = {
+  id: string;
+  name?: string | null;
+  imageUrl?: string | null;
+  filters?: Array<string | null> | null;
+  isDone?: boolean | null;
+};
+
+export type DeleteImageJobInput = {
   id?: string | null;
 };
 
-export type ModelPhotoFilterInput = {
+export type ModelImageJobFilterInput = {
   id?: ModelIDInput | null;
   name?: ModelStringInput | null;
-  image?: ModelStringInput | null;
-  and?: Array<ModelPhotoFilterInput | null> | null;
-  or?: Array<ModelPhotoFilterInput | null> | null;
-  not?: ModelPhotoFilterInput | null;
+  imageUrl?: ModelStringInput | null;
+  filters?: ModelStringInput | null;
+  isDone?: ModelBooleanInput | null;
+  and?: Array<ModelImageJobFilterInput | null> | null;
+  or?: Array<ModelImageJobFilterInput | null> | null;
+  not?: ModelImageJobFilterInput | null;
 };
 
 export type ModelIDInput = {
@@ -94,80 +109,98 @@ export type ModelIDInput = {
   size?: ModelSizeInput | null;
 };
 
-export type CreatePhotoMutation = {
-  __typename: "Photo";
+export type CreateImageJobMutation = {
+  __typename: "ImageJob";
   id: string;
   name: string;
-  image: string | null;
+  imageUrl: string;
+  filters: Array<string | null>;
+  isDone: boolean | null;
 };
 
-export type UpdatePhotoMutation = {
-  __typename: "Photo";
+export type UpdateImageJobMutation = {
+  __typename: "ImageJob";
   id: string;
   name: string;
-  image: string | null;
+  imageUrl: string;
+  filters: Array<string | null>;
+  isDone: boolean | null;
 };
 
-export type DeletePhotoMutation = {
-  __typename: "Photo";
+export type DeleteImageJobMutation = {
+  __typename: "ImageJob";
   id: string;
   name: string;
-  image: string | null;
+  imageUrl: string;
+  filters: Array<string | null>;
+  isDone: boolean | null;
 };
 
-export type GetPhotoQuery = {
-  __typename: "Photo";
+export type GetImageJobQuery = {
+  __typename: "ImageJob";
   id: string;
   name: string;
-  image: string | null;
+  imageUrl: string;
+  filters: Array<string | null>;
+  isDone: boolean | null;
 };
 
-export type ListPhotosQuery = {
-  __typename: "ModelPhotoConnection";
+export type ListImageJobsQuery = {
+  __typename: "ModelImageJobConnection";
   items: Array<{
-    __typename: "Photo";
+    __typename: "ImageJob";
     id: string;
     name: string;
-    image: string | null;
+    imageUrl: string;
+    filters: Array<string | null>;
+    isDone: boolean | null;
   } | null> | null;
   nextToken: string | null;
 };
 
-export type OnCreatePhotoSubscription = {
-  __typename: "Photo";
+export type OnCreateImageJobSubscription = {
+  __typename: "ImageJob";
   id: string;
   name: string;
-  image: string | null;
+  imageUrl: string;
+  filters: Array<string | null>;
+  isDone: boolean | null;
 };
 
-export type OnUpdatePhotoSubscription = {
-  __typename: "Photo";
+export type OnUpdateImageJobSubscription = {
+  __typename: "ImageJob";
   id: string;
   name: string;
-  image: string | null;
+  imageUrl: string;
+  filters: Array<string | null>;
+  isDone: boolean | null;
 };
 
-export type OnDeletePhotoSubscription = {
-  __typename: "Photo";
+export type OnDeleteImageJobSubscription = {
+  __typename: "ImageJob";
   id: string;
   name: string;
-  image: string | null;
+  imageUrl: string;
+  filters: Array<string | null>;
+  isDone: boolean | null;
 };
 
 @Injectable({
   providedIn: "root"
 })
 export class APIService {
-  async CreatePhoto(
-    input: CreatePhotoInput,
-    condition?: ModelPhotoConditionInput
-  ): Promise<CreatePhotoMutation> {
-    const statement = `mutation CreatePhoto($input: CreatePhotoInput!, $condition: ModelPhotoConditionInput) {
-        createPhoto(input: $input, condition: $condition) {
+  async CreateImageJob(
+    input: CreateImageJobInput,
+    condition?: ModelImageJobConditionInput
+  ): Promise<CreateImageJobMutation> {
+    const statement = `mutation CreateImageJob($input: CreateImageJobInput!, $condition: ModelImageJobConditionInput) {
+        createImageJob(input: $input, condition: $condition) {
           __typename
           id
           name
-          image
+          imageUrl
+          filters
+          isDone
         }
       }`;
     const gqlAPIServiceArguments: any = {
@@ -179,18 +212,20 @@ export class APIService {
     const response = (await API.graphql(
       graphqlOperation(statement, gqlAPIServiceArguments)
     )) as any;
-    return <CreatePhotoMutation>response.data.createPhoto;
+    return <CreateImageJobMutation>response.data.createImageJob;
   }
-  async UpdatePhoto(
-    input: UpdatePhotoInput,
-    condition?: ModelPhotoConditionInput
-  ): Promise<UpdatePhotoMutation> {
-    const statement = `mutation UpdatePhoto($input: UpdatePhotoInput!, $condition: ModelPhotoConditionInput) {
-        updatePhoto(input: $input, condition: $condition) {
+  async UpdateImageJob(
+    input: UpdateImageJobInput,
+    condition?: ModelImageJobConditionInput
+  ): Promise<UpdateImageJobMutation> {
+    const statement = `mutation UpdateImageJob($input: UpdateImageJobInput!, $condition: ModelImageJobConditionInput) {
+        updateImageJob(input: $input, condition: $condition) {
           __typename
           id
           name
-          image
+          imageUrl
+          filters
+          isDone
         }
       }`;
     const gqlAPIServiceArguments: any = {
@@ -202,18 +237,20 @@ export class APIService {
     const response = (await API.graphql(
       graphqlOperation(statement, gqlAPIServiceArguments)
     )) as any;
-    return <UpdatePhotoMutation>response.data.updatePhoto;
+    return <UpdateImageJobMutation>response.data.updateImageJob;
   }
-  async DeletePhoto(
-    input: DeletePhotoInput,
-    condition?: ModelPhotoConditionInput
-  ): Promise<DeletePhotoMutation> {
-    const statement = `mutation DeletePhoto($input: DeletePhotoInput!, $condition: ModelPhotoConditionInput) {
-        deletePhoto(input: $input, condition: $condition) {
+  async DeleteImageJob(
+    input: DeleteImageJobInput,
+    condition?: ModelImageJobConditionInput
+  ): Promise<DeleteImageJobMutation> {
+    const statement = `mutation DeleteImageJob($input: DeleteImageJobInput!, $condition: ModelImageJobConditionInput) {
+        deleteImageJob(input: $input, condition: $condition) {
           __typename
           id
           name
-          image
+          imageUrl
+          filters
+          isDone
         }
       }`;
     const gqlAPIServiceArguments: any = {
@@ -225,15 +262,17 @@ export class APIService {
     const response = (await API.graphql(
       graphqlOperation(statement, gqlAPIServiceArguments)
     )) as any;
-    return <DeletePhotoMutation>response.data.deletePhoto;
+    return <DeleteImageJobMutation>response.data.deleteImageJob;
   }
-  async GetPhoto(id: string): Promise<GetPhotoQuery> {
-    const statement = `query GetPhoto($id: ID!) {
-        getPhoto(id: $id) {
+  async GetImageJob(id: string): Promise<GetImageJobQuery> {
+    const statement = `query GetImageJob($id: ID!) {
+        getImageJob(id: $id) {
           __typename
           id
           name
-          image
+          imageUrl
+          filters
+          isDone
         }
       }`;
     const gqlAPIServiceArguments: any = {
@@ -242,21 +281,23 @@ export class APIService {
     const response = (await API.graphql(
       graphqlOperation(statement, gqlAPIServiceArguments)
     )) as any;
-    return <GetPhotoQuery>response.data.getPhoto;
+    return <GetImageJobQuery>response.data.getImageJob;
   }
-  async ListPhotos(
-    filter?: ModelPhotoFilterInput,
+  async ListImageJobs(
+    filter?: ModelImageJobFilterInput,
     limit?: number,
     nextToken?: string
-  ): Promise<ListPhotosQuery> {
-    const statement = `query ListPhotos($filter: ModelPhotoFilterInput, $limit: Int, $nextToken: String) {
-        listPhotos(filter: $filter, limit: $limit, nextToken: $nextToken) {
+  ): Promise<ListImageJobsQuery> {
+    const statement = `query ListImageJobs($filter: ModelImageJobFilterInput, $limit: Int, $nextToken: String) {
+        listImageJobs(filter: $filter, limit: $limit, nextToken: $nextToken) {
           __typename
           items {
             __typename
             id
             name
-            image
+            imageUrl
+            filters
+            isDone
           }
           nextToken
         }
@@ -274,44 +315,56 @@ export class APIService {
     const response = (await API.graphql(
       graphqlOperation(statement, gqlAPIServiceArguments)
     )) as any;
-    return <ListPhotosQuery>response.data.listPhotos;
+    return <ListImageJobsQuery>response.data.listImageJobs;
   }
-  OnCreatePhotoListener: Observable<OnCreatePhotoSubscription> = API.graphql(
+  OnCreateImageJobListener: Observable<
+    OnCreateImageJobSubscription
+  > = API.graphql(
     graphqlOperation(
-      `subscription OnCreatePhoto {
-        onCreatePhoto {
+      `subscription OnCreateImageJob {
+        onCreateImageJob {
           __typename
           id
           name
-          image
+          imageUrl
+          filters
+          isDone
         }
       }`
     )
-  ) as Observable<OnCreatePhotoSubscription>;
+  ) as Observable<OnCreateImageJobSubscription>;
 
-  OnUpdatePhotoListener: Observable<OnUpdatePhotoSubscription> = API.graphql(
+  OnUpdateImageJobListener: Observable<
+    OnUpdateImageJobSubscription
+  > = API.graphql(
     graphqlOperation(
-      `subscription OnUpdatePhoto {
-        onUpdatePhoto {
+      `subscription OnUpdateImageJob {
+        onUpdateImageJob {
           __typename
           id
           name
-          image
+          imageUrl
+          filters
+          isDone
         }
       }`
     )
-  ) as Observable<OnUpdatePhotoSubscription>;
+  ) as Observable<OnUpdateImageJobSubscription>;
 
-  OnDeletePhotoListener: Observable<OnDeletePhotoSubscription> = API.graphql(
+  OnDeleteImageJobListener: Observable<
+    OnDeleteImageJobSubscription
+  > = API.graphql(
     graphqlOperation(
-      `subscription OnDeletePhoto {
-        onDeletePhoto {
+      `subscription OnDeleteImageJob {
+        onDeleteImageJob {
           __typename
           id
           name
-          image
+          imageUrl
+          filters
+          isDone
         }
       }`
     )
-  ) as Observable<OnDeletePhotoSubscription>;
+  ) as Observable<OnDeleteImageJobSubscription>;
 }

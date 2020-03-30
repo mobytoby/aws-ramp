@@ -29,9 +29,7 @@ export class UploadComponent implements OnInit {
   }
 
   async storeFile(file: File) {
-    Storage.put(`image/${file.name}`,
-                file,
-                { level: 'private'})
+    Storage.put(`image/${file.name}`, file, { level: 'private'})
     .then(() => {
       this.uploaded.emit(true);
     })
