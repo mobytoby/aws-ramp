@@ -1,21 +1,31 @@
 <nav class="navbar navbar-expand-lg navbar-light bg-light mb-3">
   <a class="navbar-brand" href="#"><strong>Photo Gallery</strong></a>
-  <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
-    aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+
+  <button
+    class="navbar-toggler"
+    type="button"
+    data-toggle="collapse"
+    (click)="isCollapsed = !isCollapsed"
+    [attr.aria-expanded]="!isCollapsed"
+    aria-controls="navbarSupportedContent"
+    aria-label="Toggle navigation"
+  >
     <span class="navbar-toggler-icon"></span>
   </button>
-  <div class="collapse navbar-collapse" id="navbarSupportedContent">
+
+  <div class="collapse navbar-collapse" id="navbarSupportedContent" [ngbCollapse]="isCollapsed">
     <ul class="navbar-nav ml-auto">
+      <li class="nav-item active">
+        <button class="btn btn-outline-primary nav-link" (click)="onUpload()"><i class="fa fa-upload"></i>
+          Upload <span class="sr-only">(current)</span></button>
+      </li>
       <li class="nav-item">
-        <a class="nav-link" href="#"> Hello {{userName}}!</a>
+        <a class="nav-link"> Hello {{userName}}!</a>
       </li>
       <li class="nav-item active">
-        <a class="nav-link" (click)="logOut"> Logout <span class="sr-only">(current)</span></a>
+        <a class="nav-link" href="" (click)="logOut()"> Logout <span class="sr-only">(current)</span></a>
       </li>
     </ul>
   </div>
 </nav>
-  <app-upload (uploaded)="gallery.refresh()" ></app-upload>
-  <app-gallery #gallery></app-gallery>
-
-
+<app-gallery #gallery></app-gallery>

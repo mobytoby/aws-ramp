@@ -1,6 +1,9 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Auth, Storage } from 'aws-amplify';
 import { Router } from '@angular/router';
+import { NgbModal } from '@ng-bootstrap/ng-bootstrap';
+import { ModalUploadComponent } from '../gallery/modal-upload/modal-upload.component';
+import { GalleryComponent } from '../gallery/gallery.component';
 
 @Component({
   selector: 'app-home',
@@ -8,21 +11,18 @@ import { Router } from '@angular/router';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
+  @ViewChild('gallery', { static: true }) galleryElem: GalleryComponent;
   router: Router;
+  isCollapsed = true;
   userName = '';
   userId = '';
 
+  constructor(private modalSvc: NgbModal) {}
+
   ngOnInit() {
-    // Auth.currentUserInfo()
-    // .then(async foo => {
-    //   console.log('Current User', foo);
-    // });
     Auth.currentAuthenticatedUser({
       bypassCache: false
     }).then(async user => {
-      // Storage.list('image', { level: 'private' })
-      // .then(val => console.log('Storage:', val));
-      // console.log(user);
       this.userId = user.attributes.sub;
       this.userName = user.username;
     })
@@ -35,6 +35,12 @@ export class HomeComponent implements OnInit {
       this.router.navigate(['/auth']);
     })
     .catch(err => console.error(err));
+  }
+
+  onUpload() {
+    this.modalSvc.open(ModalUploadComponent).result.then(val => {
+      this.galleryElem.refresh();
+    });
   }
 
 }

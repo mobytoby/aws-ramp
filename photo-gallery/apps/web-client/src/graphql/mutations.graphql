@@ -9,6 +9,7 @@ mutation CreateImageJob(
     imageUrl
     filters
     isDone
+    isToby
   }
 }
 mutation UpdateImageJob(
@@ -21,6 +22,7 @@ mutation UpdateImageJob(
     imageUrl
     filters
     isDone
+    isToby
   }
 }
 mutation DeleteImageJob(
@@ -33,5 +35,6 @@ mutation DeleteImageJob(
     imageUrl
     filters
     isDone
+    isToby
   }
 }

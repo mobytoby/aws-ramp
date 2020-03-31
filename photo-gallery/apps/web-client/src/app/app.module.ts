@@ -13,13 +13,22 @@ import { AmplifyAngularModule, AmplifyService } from 'aws-amplify-angular';
 
 import { AppComponent } from './app.component';
 import { GalleryComponent } from './gallery/gallery.component';
-import { UploadComponent } from './upload/upload.component';
 import { AppRoutingModule } from './app-routing.module';
 import { AuthComponent } from './auth/auth.component';
 import { HomeComponent } from './home/home.component';
+import { ModalFilterSelectionComponent } from './gallery/modal-filter-selection/modal-filter-selection.component';
+import { ModalUploadComponent } from './gallery/modal-upload/modal-upload.component';
 
 @NgModule({
-  declarations: [AppComponent, GalleryComponent, UploadComponent, AuthComponent, HomeComponent],
+  declarations: [
+    AppComponent,
+    GalleryComponent,
+    AuthComponent,
+    HomeComponent,
+    ModalFilterSelectionComponent,
+    ModalUploadComponent
+  ],
+  entryComponents: [ModalFilterSelectionComponent, ModalUploadComponent],
   imports: [
     AmplifyAngularModule,
     AppRoutingModule,
@@ -29,9 +38,9 @@ import { HomeComponent } from './home/home.component';
     HttpClientModule,
     MasonryGalleryModule,
     NgbModule,
-    NgxDropzoneModule,
+    NgxDropzoneModule
   ],
   providers: [AmplifyService],
-  bootstrap: [AppComponent],
+  bootstrap: [AppComponent]
 })
 export class AppModule {}

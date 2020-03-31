@@ -14,6 +14,7 @@ export class AuthGuard implements CanActivate {
           bypassCache: false
         })
         .then((user) => {
+          console.log(user);
           if (user) {
             resolve(true);
           }

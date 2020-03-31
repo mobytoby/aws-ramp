@@ -1,8 +1,10 @@
-import { Component, OnInit } from '@angular/core';
+import { Component, OnInit, ViewChild, ElementRef } from '@angular/core';
 import { Observable, from, forkJoin } from 'rxjs';
 import { map, flatMap } from 'rxjs/operators';
 import { IMasonryGalleryImage } from 'ngx-masonry-gallery';
 import { Storage } from 'aws-amplify';
+import { NgbModal, ModalDismissReasons } from '@ng-bootstrap/ng-bootstrap';
+import { ModalFilterSelectionComponent } from './modal-filter-selection/modal-filter-selection.component';
 
 
 interface S3Object {
@@ -18,11 +20,15 @@ interface S3Object {
   styleUrls: ['./gallery.component.scss']
 })
 export class GalleryComponent implements OnInit {
-  photoUrls: Observable<IMasonryGalleryImage[]> = new Observable<IMasonryGalleryImage[]>();
-  constructor() {}
+  // photoUrls: Observable<IMasonryGalleryImage[]> = new Observable<IMasonryGalleryImage[]>();
+  photoUrls: IMasonryGalleryImage[] = [];
+
+  constructor(private modalSvc: NgbModal) {}
 
   refresh() {
-    this.photoUrls = this.buildUrls();
+    this.buildUrls().subscribe(res => {
+      this.photoUrls = res;
+    });
   }
 
   ngOnInit(): void {
@@ -30,14 +36,17 @@ export class GalleryComponent implements OnInit {
   }
 
   buildUrls(): Observable<IMasonryGalleryImage[]> {
-    const s3Urls$ = from<Promise<S3Object[]>>(Storage.list('image', { level: 'private'}))
+    return from<Promise<S3Object[]>>(Storage.list('image', { level: 'private'}))
     .pipe(
       map(s3Objects => s3Objects.map(obj => obj.key)),
       map(keys => keys.map(key => from<Promise<string|object>>(Storage.get(key, { level: 'private' })))),
       flatMap(objArray$ => forkJoin(objArray$)),
-    );
-    return s3Urls$.pipe(
       map(urls => urls.map(url => ({ imageUrl: url } as IMasonryGalleryImage)))
     );
+  }
+
+  imageClicked(image: IMasonryGalleryImage) {
+    const modalRef = this.modalSvc.open(ModalFilterSelectionComponent);
+    modalRef.componentInstance.selectedImageSrc = image.imageUrl;
   }
 }

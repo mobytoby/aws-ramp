@@ -6,6 +6,7 @@ subscription OnCreateImageJob {
     imageUrl
     filters
     isDone
+    isToby
   }
 }
 subscription OnUpdateImageJob {
@@ -15,6 +16,7 @@ subscription OnUpdateImageJob {
     imageUrl
     filters
     isDone
+    isToby
   }
 }
 subscription OnDeleteImageJob {
@@ -24,5 +26,6 @@ subscription OnDeleteImageJob {
     imageUrl
     filters
     isDone
+    isToby
   }
 }
