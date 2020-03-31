@@ -11,7 +11,7 @@ import { GalleryComponent } from '../gallery/gallery.component';
   styleUrls: ['./home.component.scss']
 })
 export class HomeComponent implements OnInit {
-  @ViewChild('gallery', { static: true }) galleryElem: GalleryComponent;
+  @ViewChild('gallery', { static: true }) gallery: GalleryComponent;
   router: Router;
   isCollapsed = true;
   userName = '';
@@ -39,7 +39,7 @@ export class HomeComponent implements OnInit {
 
   onUpload() {
     this.modalSvc.open(ModalUploadComponent).result.then(val => {
-      this.galleryElem.refresh();
+      this.gallery.refresh();
     });
   }
 

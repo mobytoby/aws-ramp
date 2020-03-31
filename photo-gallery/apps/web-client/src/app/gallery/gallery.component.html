@@ -1,6 +1,10 @@
 <div class="row mt-3">
   <div class="col mx-3">
-    <ngx-masonry-gallery [width]='400' [images]="photoUrls" (clickImage)="imageClicked($event)"></ngx-masonry-gallery>
+    <ngx-masonry-gallery
+      [width]="400"
+      [images]="photoUrls"
+      (clickImage)="imageClicked($event)"
+      [imageClasses]="['masonryImage']"
+    ></ngx-masonry-gallery>
   </div>
 </div>
-

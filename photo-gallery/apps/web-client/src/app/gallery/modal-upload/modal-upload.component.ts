@@ -84,7 +84,9 @@ export class ModalUploadComponent implements OnInit {
       Storage.put(`image/${file.name}`, file, { level: 'private' })
     ).subscribe(
       res => {
-        this.handleSuccess(res);
+        console.log('Storage:Put', res);
+        this.uploaded.emit(true);
+        this.activeModal.close();
       },
       err => {
         console.error(err);
@@ -93,14 +95,6 @@ export class ModalUploadComponent implements OnInit {
     );
   }
 
-  handleSuccess(res: any) {
-    console.log('Storage:Put', res);
-    this.uploaded.emit(true);
-    this.activeModal.close();
-    // this.apiSvc.CreateImageJob({
-    //   new
-    // })
-  }
 
   ngOnInit() {}
 }

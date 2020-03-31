@@ -20,7 +20,7 @@ interface S3Object {
   styleUrls: ['./gallery.component.scss']
 })
 export class GalleryComponent implements OnInit {
-  // photoUrls: Observable<IMasonryGalleryImage[]> = new Observable<IMasonryGalleryImage[]>();
+
   photoUrls: IMasonryGalleryImage[] = [];
 
   constructor(private modalSvc: NgbModal) {}
@@ -38,7 +38,7 @@ export class GalleryComponent implements OnInit {
   buildUrls(): Observable<IMasonryGalleryImage[]> {
     return from<Promise<S3Object[]>>(Storage.list('image', { level: 'private'}))
     .pipe(
-      map(s3Objects => s3Objects.map(obj => obj.key)),
+      map(s3Objects => { console.log('s3Objects:', s3Objects); return s3Objects.map(obj => obj.key); }),
       map(keys => keys.map(key => from<Promise<string|object>>(Storage.get(key, { level: 'private' })))),
       flatMap(objArray$ => forkJoin(objArray$)),
       map(urls => urls.map(url => ({ imageUrl: url } as IMasonryGalleryImage)))

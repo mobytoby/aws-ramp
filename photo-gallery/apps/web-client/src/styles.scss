@@ -1,2 +1,7 @@
 @import '~bootstrap/dist/css/bootstrap.css';
 @import '~aws-amplify-angular/Theme.css';
+.masonryImage {
+  cursor: pointer;
+  border-radius: 5px;
+  text-shadow: 2px 2px;
+}
