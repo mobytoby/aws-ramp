@@ -1,0 +1,14 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+    <RootNamespace>job_scheduler</RootNamespace>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="AWSSDK.Core" Version="3.3.105.8" />
+    <PackageReference Include="AWSSDK.DynamoDBv2" Version="3.3.105.21" />
+    <PackageReference Include="AWSSDK.ECS" Version="3.3.115.11" />
+  </ItemGroup>
+</Project>
