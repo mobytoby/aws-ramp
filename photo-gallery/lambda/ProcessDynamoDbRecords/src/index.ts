@@ -8,6 +8,7 @@ import { default as SSM, GetParametersResult } from "aws-sdk/clients/ssm";
 import { waterfall } from "async";
 
 export const handler = async (event: DynamoDBStreamEvent): Promise<any> => {
+  console.log('Processing Dynamo event', event)
   const ecs = new ECS({ region: 'us-west-2' });
   const ssm = new SSM({ region: 'us-west-2' });
   const allPromises: Promise<any>[] = event.Records
@@ -25,11 +26,14 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<any> => {
         '/photo-gallery/securityGroups',
       ];
 
-
       waterfall([
         function(callback: any) {
           ssm.getParameters({ Names: params }, 
-            (err: any, data: GetParametersResult) => callback(err, data.Parameters))
+            (err: any, data: GetParametersResult) =>  {
+              console.log(err, data);
+              callback(err, data.Parameters);
+            }
+          )
         },
         function(parameters: any, callback: any) {
           ecs.runTask({
