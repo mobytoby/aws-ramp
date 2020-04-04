@@ -1,4 +1,6 @@
 ﻿using System;
+using System.IO;
+
 namespace job_scheduler
 {
     public class Scheduler
@@ -16,15 +18,14 @@ namespace job_scheduler
             {
                 Console.WriteLine("I'm in Run!");
                 StorageService.Job = job;
-                StorageService.FetchImage("foo");
+                var bytes = StorageService.FetchImage();
+                // Grab the filters and find out where to send the bytes
+
             }
             catch (Exception e)
             {
                 Console.Error.Write(e);
             }
-
-
-
         }
     }
 }

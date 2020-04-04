@@ -10,73 +10,60 @@ namespace job_scheduler
     public interface IStorageService
     {
         ImageJob Job { set; }
-        Task<byte[]> FetchImage();
-        void FetchImage(string foo);
+        byte[] FetchImage();
     }
 
     public class StorageService : IStorageService
     {
         private static readonly RegionEndpoint bucketRegion = RegionEndpoint.USWest2;
-        private ImageJob _job;
         public StorageService()
         {
         }
 
         public ImageJob Job
         {
-            set {
-                _job = value;
-            }
+            private get; set;
         }
 
-        public Task<byte[]> FetchImage()
+        public object ListBuckets()
         {
-            return null;
+            var client = new AmazonS3Client(bucketRegion);
+            var results = client.ListObjectsV2Async(new ListObjectsV2Request
+            {
+                BucketName = "photo-gallery-web61757808498d458fbc8a9b5a898aebweb-dev"
+            }).Result;
+            Console.WriteLine(results);
+            return results;
         }
 
-        public async void FetchImage(string foo)
-        {
-            if (_job == null)
-            {
-                return;
-            }
-            // Create a client
-            AmazonS3Client client = new AmazonS3Client(bucketRegion);
-            var request = new ListObjectsV2Request
-            {
-                BucketName = "photo-gallery-web61757808498d458fbc8a9b5a898aebweb-dev",
 
+        public byte[] FetchImage()
+        {
+            ListBuckets();
+            if (Job == null)
+            {
+                return null;
+            }
+            //Issue request and remember to dispose of the response
+            var client = new AmazonS3Client(bucketRegion);
+            GetObjectRequest request = new GetObjectRequest
+            {
+                BucketName = BucketName,
+                Key = Key
             };
-            var buckets = await client.ListObjectsV2Async(request);
-            Console.Write(buckets);
-            // Create a GetObject request
-            //GetObjectRequest request = new GetObjectRequest
-            //{
-            //    BucketName = "SampleBucket",
-            //    Key = "Item1"
-            //};
-
-            // Issue request and remember to dispose of the response
-            //var client = new AmazonS3Client(bucketRegion);
-            //GetObjectRequest request = new GetObjectRequest
-            //{
-            //    BucketName = BucketName,
-            //    Key = Key
-            //};
-            //GetObjectResponse response = client.GetObjectAsync(request).Wait();
-            //using ()
-            //using (Stream responseStream = response.ResponseStream)
-            //{
-            //    var ms = new MemoryStream();
-            //    responseStream.CopyTo(ms);
-            //    return ms.ToArray();
-            //}
+            using (GetObjectResponse response = client.GetObjectAsync(request).Result)
+            using (Stream responseStream = response.ResponseStream)
+            {
+                var ms = new MemoryStream();
+                responseStream.CopyTo(ms);
+                return ms.ToArray();
+            }
         }
 
         public string BucketName {
             get
             {
-                var url = _job.ImageUrl;
+                var url = Job.ImageUrl;
                 //https://photo-gallery-web61757808498d458fbc8a9b5a898aebweb-dev.s3.us-west-2.amazonaws.com/private/us-west-2%3Ab393c4d1-d031-4b7f-81d9-68419aa35276/image/IMG_2953.jpg
                 //Strip https:// = 8
                 var sub = url.Substring(8);
@@ -89,9 +76,9 @@ namespace job_scheduler
         {
             get
             {
-                var url = _job.ImageUrl;
+                var url = Job.ImageUrl;
                 var sub = url.Substring(8);
-                return sub.Substring(sub.IndexOf('/'));
+                return Uri.UnescapeDataString(sub.Substring(sub.IndexOf('/')+1));
             }
         }
     }
