@@ -5,6 +5,7 @@ using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -39,7 +40,15 @@ namespace job_scheduler
                 StorageService.Job = job;
                 var bytes = StorageService.FetchImage();
                 DispatchService.Job = job;
-                DispatchService.DispatchAll(bytes);
+                var reports = DispatchService.DispatchAll(bytes);
+                // TODO Refactor so that the processing is either one and only one,
+                // TODO Or has the ability to specify an order and those processors are
+                // TODO chained together
+                var processedBytes = reports.Values.First(r => r.IsSuccess).ProcessedBytes;
+                StorageService.SaveImage(processedBytes);
+
+                // TODO Remove this
+                var foo = "123";
 
             }
             catch (Exception e)

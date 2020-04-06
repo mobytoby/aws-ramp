@@ -117,7 +117,7 @@ namespace job_scheduler
             byteArrayContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
             try
             {
-                var result = await client.PostAsync("", byteArrayContent);
+                var result = await client.PostAsync(path, byteArrayContent);
                 if (!result.IsSuccessStatusCode)
                 {
                     report.Errors = result.ReasonPhrase;

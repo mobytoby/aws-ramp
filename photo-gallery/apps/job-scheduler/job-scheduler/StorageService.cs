@@ -11,6 +11,7 @@ namespace job_scheduler
     {
         ImageJob Job { set; }
         byte[] FetchImage();
+        void SaveImage(byte[] processedBytes);
     }
 
     public class StorageService : IStorageService
@@ -57,6 +58,24 @@ namespace job_scheduler
                 responseStream.CopyTo(ms);
                 return ms.ToArray();
             }
+        }
+
+        public void SaveImage(byte[] processedBytes)
+        {
+            if (Job == null)
+            {
+                return;
+            }
+            var inputStream = new MemoryStream(processedBytes);
+            //Issue request and remember to dispose of the response
+            var client = new AmazonS3Client(bucketRegion);
+            PutObjectRequest request = new PutObjectRequest
+            {
+                BucketName = BucketName,
+                Key = Key,
+                InputStream = inputStream,
+            };
+            PutObjectResponse response = client.PutObjectAsync(request).Result;
         }
 
         public string BucketName {
