@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Options;
+using Newtonsoft.Json;
 using System;
 using System.IO;
 using System.Threading;
@@ -12,25 +13,32 @@ namespace job_scheduler
     public class Scheduler : IHostedService
     {
         private IConfiguration Config { get; }
+        private IOptions<Processing> ProcessingConfig { get; }
+        private IOptions<input> InputConfig { get; }
         private IStorageService StorageService { get; }
         private IDispatchService DispatchService { get; }
 
 
-        public Scheduler(IConfiguration config, IStorageService storageService, IDispatchService dispatchService)
+
+        public Scheduler(IConfiguration configuration,
+                         IStorageService storageService, 
+                         IDispatchService dispatchService)
         {
-            Config = config;
+            Config = configuration;
             StorageService = storageService;
             DispatchService = dispatchService;
-            
         }
 
         public Task StartAsync(CancellationToken cancellationToken)
         {
             try
             {
-                ImageJob job = null;//Get from command line?
+                var json = Config.GetSection("input:imageJob").Value;
+                if(json == null) { return null;  }
+                var job = JsonConvert.DeserializeObject<ImageJob>(json);
                 StorageService.Job = job;
                 var bytes = StorageService.FetchImage();
+                DispatchService.Job = job;
                 DispatchService.DispatchAll(bytes);
 
             }
@@ -38,12 +46,12 @@ namespace job_scheduler
             {
                 Console.Error.Write(e);
             }
-            return null;
+            return Task.FromResult("Complete");
         }
 
         public Task StopAsync(CancellationToken cancellationToken)
         {
-            throw new NotImplementedException();
+            return Task.FromResult("Shutting down");
         }
     }
 }

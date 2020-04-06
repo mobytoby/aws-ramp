@@ -1,6 +1,9 @@
-﻿using Microsoft.Extensions.Configuration;
+﻿using job_scheduler.Settings;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
@@ -31,17 +34,20 @@ namespace job_scheduler
     {
         string ProcessName { get; set; }
         Uri Endpoint { get; set; }
-        Task<IDispatchReport> Process(byte[] bytes);
+        Task<IDispatchReport> Process(string path, byte[] bytes);
     }
 
     public class DispatchService : IDispatchService
     {
         private IConfiguration Configuration { get; }
+        private IOptions<Processing> PConfig { get; }
         public ImageJob Job { private get; set; }
+        private string path { get; set; }
 
-        public DispatchService(IConfiguration configuration)
+        public DispatchService(IConfiguration configuration, IOptions<Processing> pConfig)
         {
             Configuration = configuration;
+            PConfig = pConfig;
         }
 
         public Dictionary<string, IDispatchReport> DispatchAll(byte[] bytes)
@@ -51,9 +57,20 @@ namespace job_scheduler
             foreach (var filter in Job.Filters)
             {
                 var service = Lookup(filter);
-                reports.Add(filter, service.Process(bytes).Result);
+                if (service == null) 
+                { 
+                    Console.Error.WriteLine($"Requested processing on {filter} service, but found no configuration");
+                    var report = DispatchReport.Create(filter);
+                    report.IsDone = true;
+                    report.IsSuccess = false;
+                    report.Errors = $"Found no configuration data for the {filter} service. Unable to proceed";
+                }
+                else
+                {
+                    reports.Add(filter, service.Process(path, bytes).Result);
+                }
             }
-            return null;
+            return reports;
         }
 
         protected IProcessingService Lookup(string filter)
@@ -62,8 +79,9 @@ namespace job_scheduler
             switch(filter)
             {
                 case Constants.GREYSCALE:
-                    var greyscaleSection = Configuration.GetSection("Processing").GetSection("Greyscale");
-                    var url = greyscaleSection.GetValue<string>("Location");
+                    var processing = PConfig.Value;
+                    var url = processing.Greyscale.BaseUri;
+                    path = processing.Greyscale.Path;
                     return new PhotoProcesingService
                     {
                         ProcessName = filter,
@@ -83,7 +101,7 @@ namespace job_scheduler
             get; set;
         }
 
-        public async Task<IDispatchReport> Process(byte[] bytes)
+        public async Task<IDispatchReport> Process(string path, byte[] bytes)
         {
             var report = DispatchReport.Create(ProcessName);
             var client = new HttpClient
@@ -97,11 +115,29 @@ namespace job_scheduler
 
             var byteArrayContent = new ByteArrayContent(bytes);
             byteArrayContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            try
+            {
+                var result = await client.PostAsync("", byteArrayContent);
+                if (!result.IsSuccessStatusCode)
+                {
+                    report.Errors = result.ReasonPhrase;
+                }
+                else
+                {
+                    var byteStream = new MemoryStream();
+                    await result.Content.CopyToAsync(byteStream);
+                    report.ProcessedBytes = byteStream.ToArray();
+                }
+                report.IsDone = true;
+                report.IsSuccess = true;
+            }
+            catch (Exception e)
+            {
+                report.Errors = e.Message;
+                report.IsDone = true;
+                report.IsSuccess = false;
+            }
 
-            var result = await client.PostAsync(
-                    "api/SomeData/Incoming", byteArrayContent);
-
-            result.EnsureSuccessStatusCode();
             return report;
         }
     }

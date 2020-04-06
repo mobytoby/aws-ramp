@@ -4,6 +4,11 @@ using System.Text;
 
 namespace job_scheduler.Settings
 {
+    public class input
+    {
+        public string imageJob { get; set; }
+    }
+
     public class Processing
     {
         public Greyscale Greyscale { get; set; }
@@ -11,6 +16,7 @@ namespace job_scheduler.Settings
 
     public class Greyscale
     {
-        public string Location { get; set; }
+        public string BaseUri { get; set; }
+        public string Path { get;set; }
     }
 }

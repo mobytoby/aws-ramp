@@ -39,7 +39,6 @@ namespace job_scheduler
 
         public byte[] FetchImage()
         {
-            ListBuckets();
             if (Job == null)
             {
                 return null;

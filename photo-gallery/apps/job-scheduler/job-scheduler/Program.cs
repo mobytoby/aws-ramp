@@ -28,7 +28,7 @@ namespace job_scheduler
                 .ConfigureAppConfiguration((hostContext, configApp) =>
                 {
                     configApp.SetBasePath(Directory.GetCurrentDirectory());
-                    configApp.AddJsonFile(appSettings, optional: true);
+                    configApp.AddJsonFile(appSettings, optional: false);
                     configApp.AddJsonFile(
                         $"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json",
                         optional: true);
@@ -38,7 +38,8 @@ namespace job_scheduler
                 .ConfigureServices((hostContext, services) =>
                 {
                     services.AddLogging();
-                    services.Configure<Processing>(hostContext.Configuration.GetSection("processing"));
+                    services.Configure<Processing>(hostContext.Configuration.GetSection("Processing"));
+                    services.Configure<input>(hostContext.Configuration.GetSection("input:imageJob"));
                     services.AddTransient<IStorageService, StorageService>();
                     services.AddTransient<IDispatchService, DispatchService>();
                     services.AddHostedService<Scheduler>();
