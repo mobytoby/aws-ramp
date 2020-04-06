@@ -1,5 +1,10 @@
 ﻿using System;
+using System.IO;
+using System.Threading.Tasks;
+using job_scheduler.Settings;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Newtonsoft.Json;
 
@@ -7,25 +12,46 @@ namespace job_scheduler
 {
     class Program
     {
-        static void Main(string[] args)
-        {
-            Console.WriteLine("Do you see this?");
-            if (args.Length <= 0) { return; }
-            if (args.Length > 1) { Console.Write("Detected more than a single argument. Only processing the first one"); }
-            ImageJob job = JsonConvert.DeserializeObject<ImageJob>(args[0]);
+        private const string prefix = "PHOTOGALLERY_";
+        private const string appSettings = "appsettings.json";
 
-            var services = ConfigureServices();
-            var serviceProvider = services.BuildServiceProvider();
-            serviceProvider.GetService<Scheduler>().Run(job);
-        }
-
-        private static IServiceCollection ConfigureServices()
+        static async Task Main(string[] args)
         {
-            IServiceCollection services = new ServiceCollection();
-            services.AddLogging(opt => opt.AddConsole());
-            services.AddTransient<IStorageService, StorageService>();
-            services.AddTransient<Scheduler>();
-            return services;
+            var host = new HostBuilder()
+                .ConfigureHostConfiguration(configHost =>
+                {
+                    configHost.SetBasePath(Directory.GetCurrentDirectory());
+                    configHost.AddJsonFile(appSettings, optional: true);
+                    configHost.AddEnvironmentVariables(prefix: prefix);
+                    configHost.AddCommandLine(args);
+                })
+                .ConfigureAppConfiguration((hostContext, configApp) =>
+                {
+                    configApp.SetBasePath(Directory.GetCurrentDirectory());
+                    configApp.AddJsonFile(appSettings, optional: true);
+                    configApp.AddJsonFile(
+                        $"appsettings.{hostContext.HostingEnvironment.EnvironmentName}.json",
+                        optional: true);
+                    configApp.AddEnvironmentVariables(prefix: prefix);
+                    configApp.AddCommandLine(args);
+                })
+                .ConfigureServices((hostContext, services) =>
+                {
+                    services.AddLogging();
+                    services.Configure<Processing>(hostContext.Configuration.GetSection("processing"));
+                    services.AddTransient<IStorageService, StorageService>();
+                    services.AddTransient<IDispatchService, DispatchService>();
+                    services.AddHostedService<Scheduler>();
+                })
+                .ConfigureLogging((hostContext, configLogging) =>
+                {
+                    configLogging.AddConsole();
+                })
+                .UseConsoleLifetime()
+                .Build();
+
+            await host.RunAsync();
+
         }
     }
 }
