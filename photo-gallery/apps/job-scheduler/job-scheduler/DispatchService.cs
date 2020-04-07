@@ -110,11 +110,8 @@ namespace job_scheduler
             };
 
             client.DefaultRequestHeaders.Accept.Clear();
-            client.DefaultRequestHeaders.Accept.Add(
-                    new MediaTypeWithQualityHeaderValue("application/octet-stream"));
 
-            var byteArrayContent = new ByteArrayContent(bytes);
-            byteArrayContent.Headers.ContentType = new MediaTypeHeaderValue("application/octet-stream");
+            var byteArrayContent = new StreamContent(new MemoryStream(bytes));
             try
             {
                 var result = await client.PostAsync(path, byteArrayContent);

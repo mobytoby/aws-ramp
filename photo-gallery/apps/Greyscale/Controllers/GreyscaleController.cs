@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -31,9 +32,9 @@ namespace Greyscale.Controllers
         }
 
         [HttpPost]
-        public async Task<byte[]> Post()
+        public async Task<IActionResult> Post()
         {
-            
+
             using (var inputStream = new MemoryStream())
             using (var outputStream = new MemoryStream())
             {
@@ -42,7 +43,7 @@ namespace Greyscale.Controllers
                 var image = Image.Load(bytes, out IImageFormat format);
                 image.Mutate(x => x.Grayscale());
                 image.Save(outputStream, format);
-                return outputStream.ToArray();
+                return File(outputStream.ToArray(), format.MimeTypes.First());
             }
         }
     }

@@ -3,7 +3,7 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "http://localhost:52225",
+      "applicationUrl": "http://localhost:53512",
       "sslPort": 0
     }
   },
@@ -17,7 +17,7 @@
         "ASPNETCORE_ENVIRONMENT": "Development"
       }
     },
-    "Greyscale": {
+    "greyscale": {
       "commandName": "Project",
       "launchBrowser": true,
       "launchUrl": "weatherforecast",
@@ -28,7 +28,6 @@
     },
     "Docker": {
       "commandName": "Docker",
-      "launchBrowser": true,
       "launchUrl": "{Scheme}://{ServiceHost}:{ServicePort}/weatherforecast",
       "publishAllPorts": true
     }

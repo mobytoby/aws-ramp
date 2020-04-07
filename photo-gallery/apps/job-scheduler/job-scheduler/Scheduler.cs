@@ -45,7 +45,7 @@ namespace job_scheduler
                 // TODO Or has the ability to specify an order and those processors are
                 // TODO chained together
                 var processedBytes = reports.Values.First(r => r.IsSuccess).ProcessedBytes;
-                StorageService.SaveImage(processedBytes);
+                StorageService.SaveImage(processedBytes); 
 
                 // TODO Remove this
                 var foo = "123";

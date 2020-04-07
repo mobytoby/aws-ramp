@@ -17,26 +17,11 @@ namespace job_scheduler
     public class StorageService : IStorageService
     {
         private static readonly RegionEndpoint bucketRegion = RegionEndpoint.USWest2;
-        public StorageService()
-        {
-        }
 
         public ImageJob Job
         {
             private get; set;
         }
-
-        public object ListBuckets()
-        {
-            var client = new AmazonS3Client(bucketRegion);
-            var results = client.ListObjectsV2Async(new ListObjectsV2Request
-            {
-                BucketName = "photo-gallery-web61757808498d458fbc8a9b5a898aebweb-dev"
-            }).Result;
-            Console.WriteLine(results);
-            return results;
-        }
-
 
         public byte[] FetchImage()
         {
@@ -44,7 +29,7 @@ namespace job_scheduler
             {
                 return null;
             }
-            //Issue request and remember to dispose of the response
+
             var client = new AmazonS3Client(bucketRegion);
             GetObjectRequest request = new GetObjectRequest
             {
@@ -60,6 +45,7 @@ namespace job_scheduler
             }
         }
 
+        // TODO Pass streams around, vs. bytes
         public void SaveImage(byte[] processedBytes)
         {
             if (Job == null)
@@ -75,7 +61,7 @@ namespace job_scheduler
                 Key = Key,
                 InputStream = inputStream,
             };
-            PutObjectResponse response = client.PutObjectAsync(request).Result;
+            _ = client.PutObjectAsync(request).Result;
         }
 
         public string BucketName {

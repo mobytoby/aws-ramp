@@ -34,7 +34,7 @@ namespace Greyscale
                     builder.WithMethods("*");
                     builder.WithHeaders("*");
                 })
-            ); 
+            );
             services.AddControllers();
         }
 
