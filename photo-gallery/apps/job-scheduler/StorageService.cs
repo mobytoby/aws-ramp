@@ -52,6 +52,10 @@ namespace job_scheduler
             {
                 return;
             }
+            if (processedBytes == null || processedBytes.Length == 0)
+            {
+                return;
+            }
             var inputStream = new MemoryStream(processedBytes);
             //Issue request and remember to dispose of the response
             var client = new AmazonS3Client(bucketRegion);

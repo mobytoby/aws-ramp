@@ -82,6 +82,7 @@ namespace job_scheduler
                     var processing = PConfig.Value;
                     var url = processing.Greyscale.BaseUri;
                     path = processing.Greyscale.Path;
+                    Console.Write($"Sending to {url}/{path}");
                     return new PhotoProcesingService
                     {
                         ProcessName = filter,

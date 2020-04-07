@@ -17,7 +17,7 @@ namespace job_scheduler
 
         static async Task Main(string[] args)
         {
-            var host = new HostBuilder()
+            var builder = new HostBuilder()
                 .ConfigureHostConfiguration(configHost =>
                 {
                     configHost.SetBasePath(Directory.GetCurrentDirectory());
@@ -37,21 +37,21 @@ namespace job_scheduler
                 })
                 .ConfigureServices((hostContext, services) =>
                 {
+                    services.AddHostedService<Scheduler>();
                     services.AddLogging();
                     services.Configure<Processing>(hostContext.Configuration.GetSection("Processing"));
                     services.Configure<input>(hostContext.Configuration.GetSection("input:imageJob"));
-                    services.AddTransient<IStorageService, StorageService>();
-                    services.AddTransient<IDispatchService, DispatchService>();
-                    services.AddHostedService<Scheduler>();
+                    services.AddScoped<IStorageService, StorageService>();
+                    services.AddScoped<IDispatchService, DispatchService>();
                 })
                 .ConfigureLogging((hostContext, configLogging) =>
                 {
                     configLogging.AddConsole();
                 })
-                .UseConsoleLifetime()
+                //.UseConsoleLifetime()
                 .Build();
 
-            await host.RunAsync();
+            await builder.RunAsync();
 
         }
     }
