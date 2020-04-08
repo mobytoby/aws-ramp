@@ -1,11 +1,5 @@
 {
     "AppSyncApiName": "photogalleryapi",
     "DynamoDBBillingMode": "PAY_PER_REQUEST",
-    "DynamoDBEnableServerSideEncryption": "false",
-    "AuthCognitoUserPoolId": {
-        "Fn::GetAtt": [
-            "authphotogalleryweb5a55f420",
-            "Outputs.UserPoolId"
-        ]
-    }
+    "DynamoDBEnableServerSideEncryption": "false"
 }

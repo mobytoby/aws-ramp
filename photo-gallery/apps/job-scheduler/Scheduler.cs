@@ -10,17 +10,20 @@ namespace job_scheduler
 {
     public class Scheduler : BackgroundService
     {
+        private IAppSyncService AppSyncService { get; }
         private IConfiguration Config { get; }
         private IStorageService StorageService { get; }
         private IDispatchService DispatchService { get; }
         private IHostApplicationLifetime AppLifetime { get; }
 
         public Scheduler(IHostApplicationLifetime appLifetime,
+                         IAppSyncService appSyncService, 
                          IConfiguration configuration,
                          IStorageService storageService,
                          IDispatchService dispatchService)
         {
             AppLifetime = appLifetime;
+            AppSyncService = appSyncService;
             Config = configuration;
             StorageService = storageService;
             DispatchService = dispatchService;
@@ -47,12 +50,13 @@ namespace job_scheduler
                 // TODO chained together
                 var processedBytes = reports.Values.FirstOrDefault(r => r.IsSuccess)?.ProcessedBytes;
                 StorageService.SaveImage(processedBytes);
-
                 //Update the Appsync record
-                // TODO Figure out how to make the AppSync call. It needs to be signed with an AWS Cognito pool id
+                AppSyncService.Job = job;
+                await AppSyncService.MarkAsDone();
             }
             catch (Exception e)
             {
+                Console.Error.WriteLine($"Error while dispatching: {e.ToString()}");
                 await Task.FromException(e);
             }
             await Task.CompletedTask;

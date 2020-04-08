@@ -56,6 +56,7 @@ namespace job_scheduler
             {
                 return;
             }
+            Console.WriteLine("Uploading processed image back to S3");
             var inputStream = new MemoryStream(processedBytes);
             //Issue request and remember to dispose of the response
             var client = new AmazonS3Client(bucketRegion);
@@ -65,7 +66,8 @@ namespace job_scheduler
                 Key = Key,
                 InputStream = inputStream,
             };
-            _ = client.PutObjectAsync(request).Result;
+            var result = client.PutObjectAsync(request).Result;
+            Console.WriteLine($"Finished uploading. Result: {result}");
         }
 
         public string BucketName {

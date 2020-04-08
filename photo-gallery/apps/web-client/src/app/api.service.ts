@@ -12,7 +12,6 @@ export type CreateImageJobInput = {
   imageUrl: string;
   filters: Array<string | null>;
   isDone?: boolean | null;
-  isToby?: boolean | null;
 };
 
 export type ModelImageJobConditionInput = {
@@ -20,7 +19,6 @@ export type ModelImageJobConditionInput = {
   imageUrl?: ModelStringInput | null;
   filters?: ModelStringInput | null;
   isDone?: ModelBooleanInput | null;
-  isToby?: ModelBooleanInput | null;
   and?: Array<ModelImageJobConditionInput | null> | null;
   or?: Array<ModelImageJobConditionInput | null> | null;
   not?: ModelImageJobConditionInput | null;
@@ -78,7 +76,6 @@ export type UpdateImageJobInput = {
   imageUrl?: string | null;
   filters?: Array<string | null> | null;
   isDone?: boolean | null;
-  isToby?: boolean | null;
 };
 
 export type DeleteImageJobInput = {
@@ -91,7 +88,6 @@ export type ModelImageJobFilterInput = {
   imageUrl?: ModelStringInput | null;
   filters?: ModelStringInput | null;
   isDone?: ModelBooleanInput | null;
-  isToby?: ModelBooleanInput | null;
   and?: Array<ModelImageJobFilterInput | null> | null;
   or?: Array<ModelImageJobFilterInput | null> | null;
   not?: ModelImageJobFilterInput | null;
@@ -120,7 +116,6 @@ export type CreateImageJobMutation = {
   imageUrl: string;
   filters: Array<string | null>;
   isDone: boolean | null;
-  isToby: boolean | null;
 };
 
 export type UpdateImageJobMutation = {
@@ -130,7 +125,6 @@ export type UpdateImageJobMutation = {
   imageUrl: string;
   filters: Array<string | null>;
   isDone: boolean | null;
-  isToby: boolean | null;
 };
 
 export type DeleteImageJobMutation = {
@@ -140,7 +134,6 @@ export type DeleteImageJobMutation = {
   imageUrl: string;
   filters: Array<string | null>;
   isDone: boolean | null;
-  isToby: boolean | null;
 };
 
 export type GetImageJobQuery = {
@@ -150,7 +143,6 @@ export type GetImageJobQuery = {
   imageUrl: string;
   filters: Array<string | null>;
   isDone: boolean | null;
-  isToby: boolean | null;
 };
 
 export type ListImageJobsQuery = {
@@ -162,7 +154,6 @@ export type ListImageJobsQuery = {
     imageUrl: string;
     filters: Array<string | null>;
     isDone: boolean | null;
-    isToby: boolean | null;
   } | null> | null;
   nextToken: string | null;
 };
@@ -174,7 +165,6 @@ export type OnCreateImageJobSubscription = {
   imageUrl: string;
   filters: Array<string | null>;
   isDone: boolean | null;
-  isToby: boolean | null;
 };
 
 export type OnUpdateImageJobSubscription = {
@@ -184,7 +174,6 @@ export type OnUpdateImageJobSubscription = {
   imageUrl: string;
   filters: Array<string | null>;
   isDone: boolean | null;
-  isToby: boolean | null;
 };
 
 export type OnDeleteImageJobSubscription = {
@@ -194,7 +183,6 @@ export type OnDeleteImageJobSubscription = {
   imageUrl: string;
   filters: Array<string | null>;
   isDone: boolean | null;
-  isToby: boolean | null;
 };
 
 @Injectable({
@@ -213,7 +201,6 @@ export class APIService {
           imageUrl
           filters
           isDone
-          isToby
         }
       }`;
     const gqlAPIServiceArguments: any = {
@@ -239,7 +226,6 @@ export class APIService {
           imageUrl
           filters
           isDone
-          isToby
         }
       }`;
     const gqlAPIServiceArguments: any = {
@@ -265,7 +251,6 @@ export class APIService {
           imageUrl
           filters
           isDone
-          isToby
         }
       }`;
     const gqlAPIServiceArguments: any = {
@@ -288,7 +273,6 @@ export class APIService {
           imageUrl
           filters
           isDone
-          isToby
         }
       }`;
     const gqlAPIServiceArguments: any = {
@@ -314,7 +298,6 @@ export class APIService {
             imageUrl
             filters
             isDone
-            isToby
           }
           nextToken
         }
@@ -346,7 +329,6 @@ export class APIService {
           imageUrl
           filters
           isDone
-          isToby
         }
       }`
     )
@@ -364,7 +346,6 @@ export class APIService {
           imageUrl
           filters
           isDone
-          isToby
         }
       }`
     )
@@ -382,7 +363,6 @@ export class APIService {
           imageUrl
           filters
           isDone
-          isToby
         }
       }`
     )

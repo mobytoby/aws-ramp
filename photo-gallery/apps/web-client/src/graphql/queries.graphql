@@ -6,7 +6,6 @@ query GetImageJob($id: ID!) {
     imageUrl
     filters
     isDone
-    isToby
   }
 }
 query ListImageJobs(
@@ -21,7 +20,6 @@ query ListImageJobs(
       imageUrl
       filters
       isDone
-      isToby
     }
     nextToken
   }

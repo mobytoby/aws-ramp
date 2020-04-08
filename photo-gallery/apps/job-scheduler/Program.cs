@@ -41,6 +41,8 @@ namespace job_scheduler
                     services.AddLogging();
                     services.Configure<Processing>(hostContext.Configuration.GetSection("Processing"));
                     services.Configure<input>(hostContext.Configuration.GetSection("input:imageJob"));
+                    services.Configure<AppSyncSettings>(hostContext.Configuration.GetSection("AppSync"));
+                    services.AddScoped<IAppSyncService, AppSyncService>();
                     services.AddScoped<IStorageService, StorageService>();
                     services.AddScoped<IDispatchService, DispatchService>();
                 })
@@ -48,7 +50,6 @@ namespace job_scheduler
                 {
                     configLogging.AddConsole();
                 })
-                //.UseConsoleLifetime()
                 .Build();
 
             await builder.RunAsync();

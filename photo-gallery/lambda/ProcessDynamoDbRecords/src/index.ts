@@ -15,6 +15,7 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<any> => {
   .filter(record => record.eventName === 'INSERT')
   .map(record => {
     return new Promise((resolve, reject) => {
+      console.log('Dynamo DB Record:', record.dynamodb);
       const newImage = record.dynamodb?.NewImage;
       if (!newImage) { return ""; }
       const job = fromDb(<Attributes>newImage, ImageJob);
@@ -27,64 +28,59 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<any> => {
       ];
 
       waterfall([
-        function(callback: any) {
-          ssm.getParameters({ Names: params }, 
-            (err: any, data: GetParametersResult) =>  {
-              console.log(err, data);
-              callback(err, data.Parameters);
-            }
-          )
-        },
-        function(parameters: any, callback: any) {
-          ecs.runTask({
-            cluster: parameters.find((d: any) => d.Name == '/photo-gallery/cluster').Value,
-            launchType: "FARGATE",
-            taskDefinition: parameters.find((d: any) => d.Name == '/photo-gallery/taskDefinition').Value,
-            networkConfiguration: {
-              awsvpcConfiguration: {
-                subnets: parameters.find((d: any) => d.Name == '/photo-gallery/subnets').Value.split(','),
-                assignPublicIp: "DISABLED",
-                securityGroups: parameters.find((d: any) => d.Name == '/photo-gallery/securityGroups').Value.split(','),
-              }
-            },
-            overrides: {
-              containerOverrides: [
-                { 
-                  name: "job-scheduler",
-                  command: [jJob]
+          function(callback: any) {
+            ssm.getParameters({ Names: params }, 
+              (err: any, data: GetParametersResult) => {
+                console.log('GetParameters Err:', err);
+                console.log('GetParameters Data:', data);
+                callback(err, data.Parameters);
+              })
+          },
+          function(parameters: any, callback: any) {
+            const params = {
+              cluster: parameters.find((d: any) => d.Name == '/photo-gallery/cluster').Value,
+              taskDefinition: parameters.find((d: any) => d.Name == '/photo-gallery/taskDefinition').Value,
+              subnets: parameters.find((d: any) => d.Name == '/photo-gallery/subnets').Value.split(','),
+              sgs: parameters.find((d: any) => d.Name == '/photo-gallery/securityGroups').Value.split(',')
+            };
+            console.log(params);
+            ecs.runTask({
+              cluster: params.cluster,
+              launchType: "FARGATE",
+              taskDefinition: params.taskDefinition,
+              networkConfiguration: {
+                awsvpcConfiguration: {
+                  subnets: params.subnets,
+                  assignPublicIp: "DISABLED",
+                  securityGroups: params.sgs,
                 }
-              ]
-            }
-          }, (err, data) => { callback(err, data) });
+              },
+              overrides: {
+                containerOverrides: [
+                  { 
+                    name: "job-scheduler",
+                    environment: [
+                      { name: 'PHOTOGALLERY_Processing__Greyscale__BaseUri', value: 'http://greyscale.mesh.local:3002' },
+                      { name: 'PHOTOGALLERY_Processing__Greyscale__Path', value: 'greyscale' },
+                    ],
+                    command: [`--input:imageJob=${jJob}`]
+                  }
+                ]
+              }
+            }, 
+            (err: any, data: any) => {
+              console.log('Start Task Err:', err);
+              console.log('Start Task Data:', data)
+              callback();
+            })
+          }
+        ],
+        (err, data) => {
+          console.log('Waterfall err:', err);
+          console.log('Waterfall data:', data);
         }
-      ], function (err, result){
-        if (err) { reject(err); }
-        else resolve(result);
-      });      
+      );     
     });
   });
   return Promise.all(allPromises);
 }
-
-
-// class Config {
-//   ssm = new SSM({ region: 'us-west-2'});
-//   cluster = await this.GetScalarParameter('photo-gallery/cluster');
-//   // public get Cluster() {
-//   //   this.ssm.getParameter({
-//   //     'photo-gallery/cluster', (err: any, data: any) => {
-//   //     if(err) { return err; }
-//   //     else { return data; }
-//   //     )
-//   //   });
-//   // }
-//   private async GetScalarParameter(key: string) {
-//     return new Promise<string|AWSError>((resolve, reject) => {
-//       this.ssm.getParameter({Name: key},
-//         (err, data) => {
-//           if (err) { reject(err); }
-//           else { resolve(data.Parameter?.Value); }
-//         });
-//     });
-//   }
-// }

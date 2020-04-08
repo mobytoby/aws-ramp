@@ -1,17 +1,14 @@
 ﻿using job_scheduler.Settings;
-using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Options;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net.Http;
-using System.Net.Http.Headers;
-using System.Text;
 using System.Threading.Tasks;
 
 namespace job_scheduler
 {
-    public static class Constants
+  public static class Constants
     {
         public const string GREYSCALE = "greyscale";
     }
@@ -39,14 +36,12 @@ namespace job_scheduler
 
     public class DispatchService : IDispatchService
     {
-        private IConfiguration Configuration { get; }
         private IOptions<Processing> PConfig { get; }
         public ImageJob Job { private get; set; }
         private string path { get; set; }
 
-        public DispatchService(IConfiguration configuration, IOptions<Processing> pConfig)
+        public DispatchService(IOptions<Processing> pConfig)
         {
-            Configuration = configuration;
             PConfig = pConfig;
         }
 
@@ -75,6 +70,7 @@ namespace job_scheduler
 
         protected IProcessingService Lookup(string filter)
         {
+            IProcessingService service = null;
             // TODO put this in another service that maps Job Names to service endpoints
             switch(filter)
             {
@@ -82,14 +78,14 @@ namespace job_scheduler
                     var processing = PConfig.Value;
                     var url = processing.Greyscale.BaseUri;
                     path = processing.Greyscale.Path;
-                    Console.Write($"Sending to {url}/{path}");
-                    return new PhotoProcesingService
+                    service = new PhotoProcesingService
                     {
                         ProcessName = filter,
                         Endpoint = new Uri(url),
                     };
+                    break;
             }
-            return null;
+            return service;
         }
     }
 
@@ -115,9 +111,11 @@ namespace job_scheduler
             var byteArrayContent = new StreamContent(new MemoryStream(bytes));
             try
             {
+                Console.WriteLine($"Sending {bytes.Length} bytes to {client.BaseAddress}/{path}");
                 var result = await client.PostAsync(path, byteArrayContent);
                 if (!result.IsSuccessStatusCode)
                 {
+                    Console.Error.Write($"Error sending content. Server returned {result.StatusCode}:{result.ReasonPhrase}");
                     report.Errors = result.ReasonPhrase;
                 }
                 else
@@ -125,12 +123,14 @@ namespace job_scheduler
                     var byteStream = new MemoryStream();
                     await result.Content.CopyToAsync(byteStream);
                     report.ProcessedBytes = byteStream.ToArray();
+                    Console.WriteLine($"Completed send. Received {report.ProcessedBytes.Length} bytes in response");
                 }
                 report.IsDone = true;
                 report.IsSuccess = true;
             }
             catch (Exception e)
             {
+                Console.Error.WriteLine(e);
                 report.Errors = e.Message;
                 report.IsDone = true;
                 report.IsSuccess = false;
