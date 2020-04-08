@@ -26,7 +26,7 @@ namespace job_scheduler {
         return false;
       }
       var options = Options.Value;
-      var url = options.AppSyncApiEndpoint;
+      var url = options.ApiEndpoint;
       if (url == null) {
         Console.Error.WriteLine("Unable to find configuration for AppSync GraphQL API Endpoint");
         return false;

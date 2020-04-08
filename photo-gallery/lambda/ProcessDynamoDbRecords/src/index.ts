@@ -25,11 +25,13 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<any> => {
         '/photo-gallery/taskDefinition',
         '/photo-gallery/subnets',
         '/photo-gallery/securityGroups',
+        '/photo-gallery/appSyncApi',
+        '/photo-gallery/apiKey',
       ];
 
       waterfall([
           function(callback: any) {
-            ssm.getParameters({ Names: params }, 
+            ssm.getParameters({ Names: params, WithDecryption: true }, 
               (err: any, data: GetParametersResult) => {
                 console.log('GetParameters Err:', err);
                 console.log('GetParameters Data:', data);
@@ -41,7 +43,9 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<any> => {
               cluster: parameters.find((d: any) => d.Name == '/photo-gallery/cluster').Value,
               taskDefinition: parameters.find((d: any) => d.Name == '/photo-gallery/taskDefinition').Value,
               subnets: parameters.find((d: any) => d.Name == '/photo-gallery/subnets').Value.split(','),
-              sgs: parameters.find((d: any) => d.Name == '/photo-gallery/securityGroups').Value.split(',')
+              sgs: parameters.find((d: any) => d.Name == '/photo-gallery/securityGroups').Value.split(','),
+              api: parameters.find((d: any) => d.Name == '/photo-gallery/appSyncApi').Value,
+              apiKey: parameters.find((d: any) => d.Name == '/photo-gallery/apiKey').Value
             };
             console.log(params);
             ecs.runTask({
@@ -62,6 +66,8 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<any> => {
                     environment: [
                       { name: 'PHOTOGALLERY_Processing__Greyscale__BaseUri', value: 'http://greyscale.mesh.local:3002' },
                       { name: 'PHOTOGALLERY_Processing__Greyscale__Path', value: 'greyscale' },
+                      { name: 'PHOTOGALLERY_AppSync__ApiEndpoint', value: 'greyscale' },
+                      { name: 'PHOTOGALLERY_AppSync__ApiKey', value: 'greyscale' },
                     ],
                     command: [`--input:imageJob=${jJob}`]
                   }
