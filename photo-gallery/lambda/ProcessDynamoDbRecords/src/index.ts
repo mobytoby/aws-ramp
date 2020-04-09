@@ -66,8 +66,8 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<any> => {
                     environment: [
                       { name: 'PHOTOGALLERY_Processing__Greyscale__BaseUri', value: 'http://greyscale.mesh.local:3002' },
                       { name: 'PHOTOGALLERY_Processing__Greyscale__Path', value: 'greyscale' },
-                      { name: 'PHOTOGALLERY_AppSync__ApiEndpoint', value: 'greyscale' },
-                      { name: 'PHOTOGALLERY_AppSync__ApiKey', value: 'greyscale' },
+                      { name: 'PHOTOGALLERY_AppSync__ApiEndpoint', value: params.api },
+                      { name: 'PHOTOGALLERY_AppSync__ApiKey', value: params.apiKey },
                     ],
                     command: [`--input:imageJob=${jJob}`]
                   }

@@ -365,3 +365,5 @@ __debug_bin
 .vscode
 .env
 *.env
+
+photo-gallery/lambda/ProcessDynamoDbRecords/src/tester.ts

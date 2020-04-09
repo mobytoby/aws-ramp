@@ -29,24 +29,8 @@
 		"s32d22bc96": {
 			"service": "S3",
 			"providerPlugin": "awscloudformation",
-			"dependsOn": [
-				{
-					"category": "function",
-					"resourceName": "S3Trigger64d8a3d3",
-					"attributes": [
-						"Name",
-						"Arn",
-						"LambdaExecutionRole"
-					]
-				}
-			]
+			"dependsOn": []
 		}
 	},
-	"function": {
-		"S3Trigger64d8a3d3": {
-			"service": "Lambda",
-			"providerPlugin": "awscloudformation",
-			"build": true
-		}
-	}
+	"function": {}
 }
