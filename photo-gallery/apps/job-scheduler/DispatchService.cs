@@ -76,8 +76,7 @@ namespace job_scheduler
             {
                 case Constants.GREYSCALE:
                     var processing = PConfig.Value;
-                    var url = processing.Greyscale.BaseUri;
-                    path = processing.Greyscale.Path;
+                    var url = processing.greyscale.BaseUri;
                     service = new PhotoProcesingService
                     {
                         ProcessName = filter,

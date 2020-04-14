@@ -173,8 +173,7 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
   
     const environment: {[index:string]: string} = {};
     this.processors.map(p => {
-      environment[`PHOTOGALLERY_Processing__${p}__BaseUri`] = `${p}.${this.namespace}:${this.APP_PORT}`
-      environment[`PHOTOGALLERY_Processing__${p}__Path`] = `${p}`
+      environment[`PHOTOGALLERY_Processing__${p}__BaseUri`] = `http://${p}.${this.namespace}:${this.APP_PORT}`
     });
 
     const schdulerContainer = schedulerTaskDef.addContainer('job-scheduler', {
