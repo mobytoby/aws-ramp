@@ -9,9 +9,9 @@ RUN dotnet restore "greyscale.csproj"
 RUN dotnet build "greyscale.csproj" -c Release -o /app/build
 
 FROM build AS publish
-RUN dotnet publish "greyscale.csproj" -c Release -o /app/publish
+RUN dotnet publish "Greyscale.csproj" -c Release -o /app/publish
 
 FROM base AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
-ENTRYPOINT ["dotnet", "greyscale.dll"]
+ENTRYPOINT ["dotnet", "Greyscale.dll"]

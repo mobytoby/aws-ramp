@@ -15,7 +15,7 @@ using SixLabors.ImageSharp.Processing;
 namespace Greyscale.Controllers
 {
     [ApiController]
-    [Route("[controller]")]
+    [Route("/")]
     public class GreyscaleController : ControllerBase
     {
         private readonly ILogger<GreyscaleController> _logger;
@@ -31,10 +31,15 @@ namespace Greyscale.Controllers
             return "Welcome to the greyscale API";
         }
 
+        [HttpGet]
+        [Route("ping")]
+        public string GetPing() {
+            return "pong";
+        }
+
         [HttpPost]
         public async Task<IActionResult> Post()
         {
-
             using (var inputStream = new MemoryStream())
             using (var outputStream = new MemoryStream())
             {
