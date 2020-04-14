@@ -18,7 +18,6 @@ import {
 } from '@aws-cdk/aws-ecs';
 import { ManagedPolicy, Role, ServicePrincipal, Policy } from '@aws-cdk/aws-iam';
 import { LogGroup, RetentionDays } from '@aws-cdk/aws-logs';
-import { RemovalPolicy, CfnOutput } from '@aws-cdk/core';
 import { Repository } from '@aws-cdk/aws-ecr';
 import { StringParameter, StringListParameter } from '@aws-cdk/aws-ssm';
 
@@ -29,52 +28,38 @@ interface VirtualRouterMap {
 
 export class PhotoGalleryCdkStack extends cdk.Stack {
   readonly APP_PORT = 8080;
+  readonly schedulerImage = 'mobytoby/job-scheduler:latest'
   readonly namespace = 'gallery.local';
-  
   readonly processors = ['greyscale'];
-  
-  // TODO this may go away once we get the ECR up within the CDK env
-  readonly SchedulerImage = 'mobytoby/job-scheduler:latest'
-  readonly ProcessorPrefix = 'mobytoby/';
-  readonly ProcessorSuffix = ':latest';
+  readonly processorPrefix = 'mobytoby/';
+  readonly processorSuffix = ':latest';
 
-  stackName: string;
-  schedulerRepo: Repository;
-  schedulerTaskRole: Role;
-  taskExecutionRole: Role;
+  logGroup: LogGroup;
   vpc: Vpc;
-  cluster: Cluster;
   internalSecurityGroup: SecurityGroup;
   externalSecurityGroup: SecurityGroup;
-  logGroup: LogGroup;
+  cluster: Cluster;
+  schedulerTaskRole: Role;
+  taskExecutionRole: Role;
   mesh: CfnMesh;
 
   constructor(scope: cdk.Construct, id: string, props?: cdk.StackProps) {
     super(scope, id, props);
 
-    this.stackName = "photo-gallery";
-
-    // this.createLogGroup();
-    // this.createVpc();
-    // this.createCluster();
-    // this.createJobScheduler();
-    // this.createProcessors(...this.processors);
-    // this.createMesh();
-  }
-
-  // TODO This isn't called. Figure out a way to bash-script the creation, tag and push of 
-  // the scheduler image prior to, or in concert with, the running of the cdk deploy
-  createEcrRepos() {
-    this.schedulerRepo = new Repository(this, 'pg-job-scheduler', {
-      repositoryName: 'pg-job-scheduler',
-    });
+    // The code that defines your stack goes here
+    this.createLogGroup();
+    this.createVpc();
+    this.createCluster();
+    this.createJobScheduler();
+    this.createProcessors(...this.processors);
+    this.createMesh();
   }
 
   createLogGroup() {
     this.logGroup = new LogGroup(this, 'pg-log-group', {
       logGroupName: this.stackName,
       retention: RetentionDays.ONE_DAY,
-      removalPolicy: RemovalPolicy.DESTROY,
+      removalPolicy: cdk.RemovalPolicy.DESTROY,
     });
   }
 
@@ -97,13 +82,6 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
       ],
     });
 
-    // Allow public inbound web traffic on port 80
-    this.externalSecurityGroup = new SecurityGroup(this, 'pg-external-sg', {
-      vpc: this.vpc,
-      allowAllOutbound: true,
-    });
-    this.externalSecurityGroup.connections.allowFromAnyIpv4(Port.tcp(80));
-
     // Allow communication within the vpc for the app and envoy containers
     // inbound 8080, 9901, 15000; all outbound
     // - 8080: default app port for gateway and colorteller
@@ -117,15 +95,15 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
       this.internalSecurityGroup.connections.allowInternally(port);
     });
     
-    new StringListParameter(this, 'pg-cdk/securityGroups', {
+    new StringListParameter(this, 'security-groups', {
       stringListValue: [this.internalSecurityGroup.securityGroupId],
-      parameterName: 'pg-cdk/securityGroups',
+      parameterName: '/pg-cdk/securityGroups',
       description: 'The security groups to configure running tasks with'
     });
 
-    new StringListParameter(this, 'pg-cdk/subnets', {
+    new StringListParameter(this, 'subnets', {
       stringListValue: this.vpc.privateSubnets.map(sn => sn.subnetId),
-      parameterName: 'pg-cdk/subnets',
+      parameterName: '/pg-cdk/subnets',
       description: 'The subnets to configure running tasks with'
     });
   }
@@ -160,19 +138,19 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
     this.taskExecutionRole = new Role(this, 'TaskExecutionRole', {
       assumedBy: new ServicePrincipal('ecs-tasks.amazonaws.com'),
       managedPolicies: [
-        ManagedPolicy.fromAwsManagedPolicyName('AmazonECSTaskExecutionRolePolicy'),
+        // ManagedPolicy.fromAwsManagedPolicyName('AmazonECSTaskExecutionRolePolicy'),
         ManagedPolicy.fromAwsManagedPolicyName('AmazonEC2ContainerRegistryReadOnly'),
       ],
     });
 
-    new StringParameter(this, 'pg-cdk/cluster', {
+    new StringParameter(this, 'cluster', {
       stringValue: this.cluster.clusterArn,
-      parameterName: 'pg-cdk/cluster',
+      parameterName: '/pg-cdk/cluster',
       description: 'The cluster into which to launch new tasks',
     });
 
     // CDK will print after finished deploying stack
-    new CfnOutput(this, 'ClusterName', {
+    new cdk.CfnOutput(this, 'ClusterName', {
       description: 'ECS/Fargate cluster name',
       value: this.cluster.clusterName,
     });
@@ -180,26 +158,28 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
 
   createJobScheduler() {
     const schedulerTaskDef = new FargateTaskDefinition(this, 'pg-job-scheduler', {
-      family: 'job-scheduler',
+      family: 'pg-job-scheduler',
       taskRole: this.schedulerTaskRole,
       executionRole: this.taskExecutionRole,
       cpu: 256,
       memoryLimitMiB: 512,
     });
 
-    new StringParameter(this, 'pg-cdk/taskDefinition', {
+    new StringParameter(this, 'task-definition', {
       stringValue: schedulerTaskDef.taskDefinitionArn,
-      parameterName: 'pg-cdk/taskDefinition',
+      parameterName: '/pg-cdk/taskDefinition',
       description: 'The arn of the scheduler task which handles orchestrating image processing'
+    });
+  
+    const environment: {[index:string]: string} = {};
+    this.processors.map(p => {
+      environment[`PHOTOGALLERY_Processing__${p}__BaseUri`] = `${p}.${this.namespace}:${this.APP_PORT}`
+      environment[`PHOTOGALLERY_Processing__${p}__Path`] = `${p}`
     });
 
     const schdulerContainer = schedulerTaskDef.addContainer('job-scheduler', {
-      image: ContainerImage.fromRegistry(this.SchedulerImage),
-      environment: {
-        SERVER_PORT: `${this.APP_PORT}`,
-        PHOTOGALLERY_Processing__Greyscale__BaseUri: `greyscale.${this.namespace}:${this.APP_PORT}`,
-        PHOTOGALLERY_Processing__Greyscale__Path: 'greyscale',
-      },
+      image: ContainerImage.fromRegistry(this.schedulerImage),
+      environment: environment,
       logging: LogDriver.awsLogs({
         logGroup: this.logGroup,
         streamPrefix: 'scheduler',
@@ -211,7 +191,7 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
 
     this.addXrayContainer(schedulerTaskDef);
 
-    new CfnOutput(this, "Scheduler Task ARN:", {
+    new cdk.CfnOutput(this, "Scheduler Task ARN:", {
       description: "Scheduler Task Definition ARN (for use in parameter store)",
       value: schedulerTaskDef.taskDefinitionArn,
     })
@@ -227,7 +207,7 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
       });
 
       const container = taskDef.addContainer('app', {
-        image: ContainerImage.fromRegistry(`${this.ProcessorPrefix}${processor}${this.ProcessorSuffix}`),
+        image: ContainerImage.fromRegistry(`${this.processorPrefix}${processor}${this.processorSuffix}`),
         environment: {
           ASPNETCORE_URLS: `http://+:${this.APP_PORT}`
         },
@@ -267,16 +247,9 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
   }
 
   createVirtualNodes() {
-    // name is the task *family* name (eg: "blue")
-    // namespace is the CloudMap namespace (eg, "mesh.local")
-    // serviceName is the discovery name (eg: "colorteller")
-    // CloudMap allows discovery names to be overloaded, unfortunately CDK doesn't support yet
     const create = (name: string, namespace: string, serviceName?: string, backends?: CfnVirtualNode.BackendProperty[]) => {
       serviceName = serviceName || name;
 
-      // WARNING: keep name in sync with the route spec, if using this node in a route
-      // WARNING: keep name in sync with the virtual service, if using this node as a provider
-      // update the route spec as well in createRoute()
       let nodeName = `${name}-vn`;
       (new CfnVirtualNode(this, nodeName, {
         meshName: this.mesh.meshName,
@@ -336,7 +309,7 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
 
   createVirtualRouter(): VirtualRouterMap[] {
     const create = (processor: string): CfnVirtualRouter => {
-      let router = new CfnVirtualRouter(this, `${processor}-virtual-router`, {
+      const router = new CfnVirtualRouter(this, `${processor}-virtual-router`, {
         virtualRouterName: `${processor}-vr`,
         meshName: this.mesh.meshName,
         spec: {
@@ -356,7 +329,7 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
 
   createRoute(routers: VirtualRouterMap[]) {
     routers.forEach(map => {
-      let route = new CfnRoute(this, `${map.Processor}-route`, {
+      const route = new CfnRoute(this, `${map.Processor}-route`, {
         routeName: `${map.Processor}-route`,
         meshName: this.mesh.meshName,
         virtualRouterName: map.Router.virtualRouterName,
@@ -393,7 +366,8 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
     });
   }
 
-  // Helpers
+
+    // Helpers
 
   private addXrayContainer(taskDef: TaskDefinition) {
     const xrayContainer = taskDef.addContainer("xray", {
