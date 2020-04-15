@@ -7,20 +7,17 @@ using Microsoft.Extensions.Logging;
 
 namespace Dispatcher.Controllers
 {
-    [ApiController]
-    [Route("/")]
-    public class ImageJobController : ControllerBase
+  [ApiController]
+  [Route("/")]
+  public class ImageJobController : ControllerBase
+  {
+    private ILogger<ImageJobController> Logger { get; }
+    private IDispatcherService Service { get; }
+    public ImageJobController(ILogger<ImageJobController> logger, IDispatcherService service)
     {
-        private IDispatcherService Service{ get; }
-        public ImageJobController(IDispatcherService service) {
-            Service = service;
-        }
-        private ILogger<ImageJobController> Logger { get; }
-
-        public ImageJobController(ILogger<ImageJobController> logger)
-        {
-            Logger = logger;
-        }
+      Logger = logger;
+      Service = service;
+    }
 
     [HttpPost]
     public IActionResult Post(ImageJob job)
@@ -30,20 +27,21 @@ namespace Dispatcher.Controllers
         throw new ArgumentNullException(nameof(job));
       }
 
-      Service.Dispatch(job);
+      Service.DispatchAsync(job);
       return Ok();
     }
 
     [HttpGet]
-        public string Get()
-        {
-            return "Welcome to the ImageJob API";
-        }
-
-        [HttpGet]
-        [Route("ping")]
-        public string GetPing() {
-            return "pong";
-        }
+    public string Get()
+    {
+      return "Welcome to the ImageJob API";
     }
+
+    [HttpGet]
+    [Route("ping")]
+    public string GetPing()
+    {
+      return "pong";
+    }
+  }
 }
