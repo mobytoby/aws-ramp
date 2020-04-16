@@ -10,14 +10,14 @@ export type CreateImageJobInput = {
   id?: string | null;
   name: string;
   imageUrl: string;
-  filters: Array<string | null>;
+  processor: string;
   isDone?: boolean | null;
 };
 
 export type ModelImageJobConditionInput = {
   name?: ModelStringInput | null;
   imageUrl?: ModelStringInput | null;
-  filters?: ModelStringInput | null;
+  processor?: ModelStringInput | null;
   isDone?: ModelBooleanInput | null;
   and?: Array<ModelImageJobConditionInput | null> | null;
   or?: Array<ModelImageJobConditionInput | null> | null;
@@ -74,7 +74,7 @@ export type UpdateImageJobInput = {
   id: string;
   name?: string | null;
   imageUrl?: string | null;
-  filters?: Array<string | null> | null;
+  processor?: string | null;
   isDone?: boolean | null;
 };
 
@@ -86,7 +86,7 @@ export type ModelImageJobFilterInput = {
   id?: ModelIDInput | null;
   name?: ModelStringInput | null;
   imageUrl?: ModelStringInput | null;
-  filters?: ModelStringInput | null;
+  processor?: ModelStringInput | null;
   isDone?: ModelBooleanInput | null;
   and?: Array<ModelImageJobFilterInput | null> | null;
   or?: Array<ModelImageJobFilterInput | null> | null;
@@ -114,7 +114,7 @@ export type CreateImageJobMutation = {
   id: string;
   name: string;
   imageUrl: string;
-  filters: Array<string | null>;
+  processor: string;
   isDone: boolean | null;
 };
 
@@ -123,7 +123,7 @@ export type UpdateImageJobMutation = {
   id: string;
   name: string;
   imageUrl: string;
-  filters: Array<string | null>;
+  processor: string;
   isDone: boolean | null;
 };
 
@@ -132,7 +132,7 @@ export type DeleteImageJobMutation = {
   id: string;
   name: string;
   imageUrl: string;
-  filters: Array<string | null>;
+  processor: string;
   isDone: boolean | null;
 };
 
@@ -141,7 +141,7 @@ export type GetImageJobQuery = {
   id: string;
   name: string;
   imageUrl: string;
-  filters: Array<string | null>;
+  processor: string;
   isDone: boolean | null;
 };
 
@@ -152,7 +152,7 @@ export type ListImageJobsQuery = {
     id: string;
     name: string;
     imageUrl: string;
-    filters: Array<string | null>;
+    processor: string;
     isDone: boolean | null;
   } | null> | null;
   nextToken: string | null;
@@ -163,7 +163,7 @@ export type OnCreateImageJobSubscription = {
   id: string;
   name: string;
   imageUrl: string;
-  filters: Array<string | null>;
+  processor: string;
   isDone: boolean | null;
 };
 
@@ -172,7 +172,7 @@ export type OnUpdateImageJobSubscription = {
   id: string;
   name: string;
   imageUrl: string;
-  filters: Array<string | null>;
+  processor: string;
   isDone: boolean | null;
 };
 
@@ -181,7 +181,7 @@ export type OnDeleteImageJobSubscription = {
   id: string;
   name: string;
   imageUrl: string;
-  filters: Array<string | null>;
+  processor: string;
   isDone: boolean | null;
 };
 
@@ -199,7 +199,7 @@ export class APIService {
           id
           name
           imageUrl
-          filters
+          processor
           isDone
         }
       }`;
@@ -224,7 +224,7 @@ export class APIService {
           id
           name
           imageUrl
-          filters
+          processor
           isDone
         }
       }`;
@@ -249,7 +249,7 @@ export class APIService {
           id
           name
           imageUrl
-          filters
+          processor
           isDone
         }
       }`;
@@ -271,7 +271,7 @@ export class APIService {
           id
           name
           imageUrl
-          filters
+          processor
           isDone
         }
       }`;
@@ -296,7 +296,7 @@ export class APIService {
             id
             name
             imageUrl
-            filters
+            processor
             isDone
           }
           nextToken
@@ -327,7 +327,7 @@ export class APIService {
           id
           name
           imageUrl
-          filters
+          processor
           isDone
         }
       }`
@@ -344,7 +344,7 @@ export class APIService {
           id
           name
           imageUrl
-          filters
+          processor
           isDone
         }
       }`
@@ -361,7 +361,7 @@ export class APIService {
           id
           name
           imageUrl
-          filters
+          processor
           isDone
         }
       }`

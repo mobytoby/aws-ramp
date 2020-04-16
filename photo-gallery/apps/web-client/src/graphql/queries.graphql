@@ -4,7 +4,7 @@ query GetImageJob($id: ID!) {
     id
     name
     imageUrl
-    filters
+    processor
     isDone
   }
 }
@@ -18,7 +18,7 @@ query ListImageJobs(
       id
       name
       imageUrl
-      filters
+      processor
       isDone
     }
     nextToken

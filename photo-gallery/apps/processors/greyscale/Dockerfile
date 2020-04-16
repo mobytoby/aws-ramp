@@ -4,8 +4,10 @@ EXPOSE 80
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.1-buster AS build
 WORKDIR /src
-COPY . .
-RUN dotnet restore "Greyscale.csproj"
+COPY *.csproj ./
+RUN dotnet restore
+
+COPY . ./
 RUN dotnet build "Greyscale.csproj" -c Release -o /app/build
 
 FROM build AS publish

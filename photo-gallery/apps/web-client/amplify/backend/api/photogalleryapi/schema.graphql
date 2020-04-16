@@ -2,6 +2,6 @@ type ImageJob @model {
   id: ID!
   name: String!
   imageUrl: String!
-  filters: [String]!
+  processor: String!
   isDone: Boolean
 }

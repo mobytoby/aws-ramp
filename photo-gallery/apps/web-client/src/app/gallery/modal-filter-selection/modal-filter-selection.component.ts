@@ -37,34 +37,20 @@ interface FilterType {
           <form>
             <div class="form-group">
               <div *ngFor="let filterType of filters" class="col">
-                <div class="form-check">
+                <div class="custom-control custom-radio">
                   <input
-                    class="form-check-input"
-                    name="filters"
-                    type="checkbox"
-                    [(ngModel)]="filterType.checked"
+                    type="radio"
                     [id]="filterType.id"
-                    [disabled]="filterType.disabled"
-                  />
-                  <label class="form-check-label" [for]="filterType.id">
-                    {{ filterType.name }}
+                    name="customRadio"
+                    class="custom-control-input"
+                    [value]="filterType.id"
+                    [(ngModel)]="processor"
+                  >
+                  <label class="custom-control-label" [for]="filterType.id">
+                    {{filterType.name}}
                   </label>
                 </div>
               </div>
-            </div>
-            <div class="form-group">
-              <input
-                type="text"
-                class="form-control"
-                [(ngModel)]="jobName"
-                name="jobName"
-                id="jobName"
-                aria-describedby="jobFilterName"
-                placeholder="Job Name"
-              />
-              <small id="jobNameHelp" class="form-text text-muted"
-                >Enter a friendly name for this image processing job.</small
-              >
             </div>
           </form>
         </div>
@@ -81,34 +67,40 @@ interface FilterType {
       </button>
     </div>
   `,
-  styles: []
+  styles: [],
 })
 export class ModalFilterSelectionComponent implements OnInit {
   @Input() selectedImageSrc: string;
   filters: FilterType[] = [
-    { id: 'greyscale', name: 'Greyscale', disabled: false, checked: false },
-    { id: 'cartoon', name: 'Cartoon', disabled: false, checked: false },
-    { id: 'saturate', name: 'Saturate', disabled: false, checked: false }
+    {
+      id: 'processing',
+      name: 'Image Processing',
+      disabled: false,
+      checked: false,
+    },
+    { id: 'resize', name: 'Resize', disabled: false, checked: false },
   ];
   jobName = '';
+  processor = '';
 
   constructor(public activeModal: NgbActiveModal, private apiSvc: APIService) {}
 
   onApply() {
     const selectedFilters = this.applifedFilters;
     console.log('Filters:', selectedFilters);
+    const name = new Date().toTimeString();
     from(
       this.apiSvc.CreateImageJob({
-        filters: selectedFilters,
-        name: this.jobName,
-        imageUrl: this.getS3BucketName(this.selectedImageSrc)
+        name,
+        processor: this.processor,
+        imageUrl: this.getS3BucketName(this.selectedImageSrc),
       })
     ).subscribe(
-      res => {
+      (res) => {
         alert('Job submitted successfully');
         console.log(res);
       },
-      err => {
+      (err) => {
         alert('Error submitting job');
         console.error(err);
       }
@@ -117,7 +109,7 @@ export class ModalFilterSelectionComponent implements OnInit {
   }
 
   get applifedFilters(): string[] {
-    return this.filters.filter(f => f.checked).map(f => f.id);
+    return this.filters.filter((f) => f.checked).map((f) => f.id);
   }
 
   getS3BucketName(url: string): string {

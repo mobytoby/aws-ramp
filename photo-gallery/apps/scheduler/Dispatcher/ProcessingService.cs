@@ -31,9 +31,9 @@ namespace Dispatcher
       {
         var client = new HttpClient();
         client.DefaultRequestHeaders.Accept.Clear();
-        Logger.LogInformation($"Sending {bytes.Length} bytes to {Endpoint}");
+        Logger.LogInformation($"Sending {bytes.Length} bytes to {GetEndpoint()}");
         var byteArrayContent = new StreamContent(new MemoryStream(bytes));
-        var result = await client.PostAsync(Endpoint, byteArrayContent);
+        var result = await client.PostAsync(GetEndpoint(), byteArrayContent);
         if (!result.IsSuccessStatusCode)
         {
           Logger.LogError($"Error sending content. Server returned {result.StatusCode}:{result.ReasonPhrase}");
@@ -51,10 +51,10 @@ namespace Dispatcher
       return outputStream.ToArray();
     }
 
-    private Uri Endpoint
+    private Uri GetEndpoint()
     {
-      get
-      {
+      // get
+      // {
         if (Job == null)
         {
           throw new InvalidOperationException("Unable to continue. No job configured");
@@ -65,12 +65,16 @@ namespace Dispatcher
         }
         var settings = Options.Value;
         var url = $"{settings.Method}://{Job.Processor}.{settings.Namespace}";
+        if (!string.IsNullOrEmpty(settings.Port))
+        {
+          url += $":{settings.Port}";
+        }
         if (!string.IsNullOrEmpty(settings.Path))
         {
           url += $"/{settings.Path}";
         }
         return new Uri(url);
-      }
+      // }
     }
   }
 }

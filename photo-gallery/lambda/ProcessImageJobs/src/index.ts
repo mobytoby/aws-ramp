@@ -15,17 +15,21 @@ export const handler = async (event: DynamoDBStreamEvent): Promise<any> => {
       const newImage = record.dynamodb?.NewImage;
       if (!newImage) { return ""; }
       const job = fromDb(<Attributes>newImage, ImageJob);
-      const jJob = JSON.stringify(job);
+      // const jJob = JSON.stringify(job);
+      console.log('Job:');
+      console.log(job);
       rq.post('http://dispatcher.mesh.local:3002', {
-        json: jJob
+        json: job
       }, (err, res, body) => {
         if (err) { 
           console.log(err); 
           reject(err);
         }
-        console.log(`Status Code: ${res.statusCode}`);
-        console.log(body);
-        resolve(body);
+        else {
+          console.log(`Status Code: ${res.statusCode}`);
+          console.log(body);
+          resolve(body);
+        }
       })
     });
   });

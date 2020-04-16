@@ -7,7 +7,7 @@ mutation CreateImageJob(
     id
     name
     imageUrl
-    filters
+    processor
     isDone
   }
 }
@@ -19,7 +19,7 @@ mutation UpdateImageJob(
     id
     name
     imageUrl
-    filters
+    processor
     isDone
   }
 }
@@ -31,7 +31,7 @@ mutation DeleteImageJob(
     id
     name
     imageUrl
-    filters
+    processor
     isDone
   }
 }

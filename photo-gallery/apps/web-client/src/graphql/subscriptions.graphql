@@ -4,7 +4,7 @@ subscription OnCreateImageJob {
     id
     name
     imageUrl
-    filters
+    processor
     isDone
   }
 }
@@ -13,7 +13,7 @@ subscription OnUpdateImageJob {
     id
     name
     imageUrl
-    filters
+    processor
     isDone
   }
 }
@@ -22,7 +22,7 @@ subscription OnDeleteImageJob {
     id
     name
     imageUrl
-    filters
+    processor
     isDone
   }
 }

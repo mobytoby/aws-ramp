@@ -1,9 +1,4 @@
-#FROM mcr.microsoft.com/dotnet/core/runtime:3.1
-#COPY bin/Debug/netcoreapp3.1/ app/
-#ENTRYPOINT ["dotnet", "app/job-scheduler.dll"]
-#CMD [ "Toby" ]
-
-FROM mcr.microsoft.com/dotnet/core/runtime:3.1 AS base
+FROM mcr.microsoft.com/dotnet/core/aspnet:3.1-buster-slim AS base
 WORKDIR /app
 EXPOSE 80
 

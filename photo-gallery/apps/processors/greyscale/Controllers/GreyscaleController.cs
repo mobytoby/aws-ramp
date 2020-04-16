@@ -23,7 +23,7 @@ namespace Greyscale.Controllers
         [HttpGet]
         public string Get()
         {
-            return "Welcome to the greyscale API2";
+            return "Welcome to the greyscale API";
         }
 
         [HttpGet]

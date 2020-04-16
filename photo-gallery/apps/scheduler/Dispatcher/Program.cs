@@ -26,6 +26,7 @@ namespace Dispatcher
           .ConfigureAppConfiguration((context, config) =>
           {
             config.AddSystemsManager($"/photo-gallery");
+            config.AddEnvironmentVariables(prefix: "PHOTOGALLERY_");
           });
   }
 }
