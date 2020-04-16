@@ -7,7 +7,6 @@ interface FilterType {
   id: string;
   name: string;
   disabled: boolean;
-  checked: boolean;
 }
 
 @Component({
@@ -72,13 +71,13 @@ interface FilterType {
 export class ModalFilterSelectionComponent implements OnInit {
   @Input() selectedImageSrc: string;
   filters: FilterType[] = [
+    { id: 'zoom-in', name: 'Zoom In', disabled: true },
     {
-      id: 'processing',
-      name: 'Image Processing',
+      id: 'enhance',
+      name: 'Enhance',
       disabled: false,
-      checked: false,
     },
-    { id: 'resize', name: 'Resize', disabled: false, checked: false },
+    { id: 'zoom-out', name: 'Zoom Out', disabled: false },
   ];
   jobName = '';
   processor = '';
@@ -86,8 +85,6 @@ export class ModalFilterSelectionComponent implements OnInit {
   constructor(public activeModal: NgbActiveModal, private apiSvc: APIService) {}
 
   onApply() {
-    const selectedFilters = this.applifedFilters;
-    console.log('Filters:', selectedFilters);
     const name = new Date().toTimeString();
     from(
       this.apiSvc.CreateImageJob({
@@ -108,14 +105,9 @@ export class ModalFilterSelectionComponent implements OnInit {
     this.activeModal.close();
   }
 
-  get applifedFilters(): string[] {
-    return this.filters.filter((f) => f.checked).map((f) => f.id);
-  }
-
   getS3BucketName(url: string): string {
     const loc = url.indexOf('?');
     return url.substring(0, loc);
   }
-
   ngOnInit() {}
 }
