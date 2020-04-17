@@ -22,15 +22,15 @@ import { Repository } from '@aws-cdk/aws-ecr';
 import { StringParameter, StringListParameter } from '@aws-cdk/aws-ssm';
 
 interface VirtualRouterMap {
-  Processor: string;
+  RouterName: string;
   Router: CfnVirtualRouter;    
 }
 
 export class PhotoGalleryCdkStack extends cdk.Stack {
   readonly APP_PORT = 8080;
-  readonly schedulerImage = 'mobytoby/job-scheduler:latest'
+  readonly dispatcherImage = 'mobytoby/dispatcher:latest'
   readonly namespace = 'gallery.local';
-  readonly processors = ['greyscale'];
+  readonly processors = ['greyscale', 'polaroid'];
   readonly processorPrefix = 'mobytoby/';
   readonly processorSuffix = ':latest';
 
@@ -39,7 +39,8 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
   internalSecurityGroup: SecurityGroup;
   externalSecurityGroup: SecurityGroup;
   cluster: Cluster;
-  schedulerTaskRole: Role;
+  dispatcherTaskRole: Role;
+  serviceTaskRole: Role;
   taskExecutionRole: Role;
   mesh: CfnMesh;
 
@@ -50,8 +51,8 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
     this.createLogGroup();
     this.createVpc();
     this.createCluster();
-    this.createJobScheduler();
-    this.createProcessors(...this.processors);
+    this.createDispatcher();
+    this.createServices(...this.processors);
     this.createMesh();
   }
 
@@ -97,13 +98,13 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
     
     new StringListParameter(this, 'security-groups', {
       stringListValue: [this.internalSecurityGroup.securityGroupId],
-      parameterName: '/pg-cdk/securityGroups',
+      parameterName: '/pg-cdk/settings/securityGroups',
       description: 'The security groups to configure running tasks with'
     });
 
     new StringListParameter(this, 'subnets', {
       stringListValue: this.vpc.privateSubnets.map(sn => sn.subnetId),
-      parameterName: '/pg-cdk/subnets',
+      parameterName: '/pg-cdk/settings/subnets',
       description: 'The subnets to configure running tasks with'
     });
   }
@@ -123,19 +124,29 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
 
 
     // grant cloudwatch and xray permissions to IAM task role for color app tasks
-    this.schedulerTaskRole = new Role(this, 'TaskRole', {
+    this.serviceTaskRole = new Role(this, 'pg-service-task-role', {
       assumedBy: new ServicePrincipal('ecs-tasks.amazonaws.com'),
       managedPolicies: [
         ManagedPolicy.fromAwsManagedPolicyName('CloudWatchLogsFullAccess'),
         ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess'),
         ManagedPolicy.fromAwsManagedPolicyName('AWSAppMeshEnvoyAccess'),
-        // TODO This should be restricted to read/write only on the photo-storage bucket
-        ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess')
+      ],
+    });
+
+    this.dispatcherTaskRole = new Role(this, 'pg-dispatcher-task-role', {
+      assumedBy: new ServicePrincipal('ecs-tasks.amazonaws.com'),
+      managedPolicies: [
+        ManagedPolicy.fromAwsManagedPolicyName('CloudWatchLogsFullAccess'),
+        ManagedPolicy.fromAwsManagedPolicyName('AWSXRayDaemonWriteAccess'),
+        ManagedPolicy.fromAwsManagedPolicyName('AWSAppMeshEnvoyAccess'),
+        ManagedPolicy.fromAwsManagedPolicyName('AmazonSSMReadOnlyAccess'),
+        ManagedPolicy.fromAwsManagedPolicyName('AmazonS3FullAccess'),
+        
       ],
     });
 
     // grant ECR pull permission to IAM task execution role for ECS agent
-    this.taskExecutionRole = new Role(this, 'TaskExecutionRole', {
+    this.taskExecutionRole = new Role(this, 'pg-task-execution-role', {
       assumedBy: new ServicePrincipal('ecs-tasks.amazonaws.com'),
       managedPolicies: [
         // ManagedPolicy.fromAwsManagedPolicyName('AmazonECSTaskExecutionRolePolicy'),
@@ -145,7 +156,7 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
 
     new StringParameter(this, 'cluster', {
       stringValue: this.cluster.clusterArn,
-      parameterName: '/pg-cdk/cluster',
+      parameterName: '/pg-cdk/settings/cluster',
       description: 'The cluster into which to launch new tasks',
     });
 
@@ -156,51 +167,62 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
     });
   }
 
-  createJobScheduler() {
-    const schedulerTaskDef = new FargateTaskDefinition(this, 'pg-job-scheduler', {
-      family: 'pg-job-scheduler',
-      taskRole: this.schedulerTaskRole,
+  createDispatcher() {
+    const dispatcherTaskDef = new FargateTaskDefinition(this, 'pg-dispatcher', {
+      family: 'pg-dispatcher',
+      taskRole: this.dispatcherTaskRole,
       executionRole: this.taskExecutionRole,
       cpu: 256,
       memoryLimitMiB: 512,
     });
 
     new StringParameter(this, 'task-definition', {
-      stringValue: schedulerTaskDef.taskDefinitionArn,
-      parameterName: '/pg-cdk/taskDefinition',
-      description: 'The arn of the scheduler task which handles orchestrating image processing'
+      stringValue: dispatcherTaskDef.taskDefinitionArn,
+      parameterName: '/pg-cdk/settings/taskDefinition',
+      description: 'The arn of the dispatcher task which handles orchestrating image processing'
     });
   
-    const environment: {[index:string]: string} = {};
-    this.processors.map(p => {
-      environment[`PHOTOGALLERY_Processing__${p}__BaseUri`] = `http://${p}.${this.namespace}:${this.APP_PORT}`
-    });
+    const environment: {[index:string]: string} = {
+      'ASPNETCORE_URLS': `http://+:${this.APP_PORT}`,
+      'PHOTOGALLERY_Processing__Port': `${this.APP_PORT}`
+    };
 
-    const schdulerContainer = schedulerTaskDef.addContainer('job-scheduler', {
-      image: ContainerImage.fromRegistry(this.schedulerImage),
+    const dispatcherContainer = dispatcherTaskDef.addContainer('dispatcher', {
+      image: ContainerImage.fromRegistry(this.dispatcherImage),
       environment: environment,
       logging: LogDriver.awsLogs({
         logGroup: this.logGroup,
-        streamPrefix: 'scheduler',
+        streamPrefix: 'dispatcher',
       }),
     });
-    schdulerContainer.addPortMappings({
+    dispatcherContainer.addPortMappings({
       containerPort: this.APP_PORT,
     });
 
-    this.addXrayContainer(schedulerTaskDef);
+    this.addXrayContainer(dispatcherTaskDef);
+    new FargateService(this, 'dispatcher', {
+      cluster: this.cluster,
+      serviceName: 'dispatcher',
+      taskDefinition: dispatcherTaskDef,
+      desiredCount: 1,
+      securityGroup: this.internalSecurityGroup,
+      cloudMapOptions: {
+        name: 'dispatcher',
+      }
+    });
 
-    new cdk.CfnOutput(this, "Scheduler Task ARN:", {
-      description: "Scheduler Task Definition ARN (for use in parameter store)",
-      value: schedulerTaskDef.taskDefinitionArn,
+    new cdk.CfnOutput(this, "Dispatcher Task ARN:", {
+      description: "Dispatcher Task Definition ARN",
+      value: dispatcherTaskDef.taskDefinitionArn,
     })
   }
 
-  createProcessors(...processors: string[]) {
+  createServices(...processors: string[]) {
     const create = (processor: string, serviceName: string) => {
       const taskDef = new FargateTaskDefinition(this, `${processor}-taskdef`, {
-        family: processor,
+        family: `pg-${processor}`,
         executionRole: this.taskExecutionRole,
+        taskRole: this.serviceTaskRole,
         cpu: 256,
         memoryLimitMiB:512
       });
@@ -212,7 +234,7 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
         },
         logging: LogDriver.awsLogs({
           logGroup: this.logGroup,
-          streamPrefix: `pg-processor-${processor}`,
+          streamPrefix: `${processor}`,
         }),
       });
       container.addPortMappings({
@@ -220,7 +242,7 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
       });
       this.addXrayContainer(taskDef);
 
-      new FargateService(this, `service-${processor}`, {
+      new FargateService(this, `${processor}`, {
         cluster: this.cluster,
         serviceName: serviceName,
         taskDefinition: taskDef,
@@ -231,7 +253,10 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
         }
       });
     }
-    processors.forEach(p => create(p, `${p}-service`));
+    create(processors[0], 'enhance');
+    processors.slice(1).forEach(processor => {
+      create(processor, `enhance-${processor}`);
+    });
   }
 
   createMesh() {
@@ -241,7 +266,8 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
 
     this.createVirtualNodes();
     let routers = this.createVirtualRouter();
-    this.createRoute(routers);
+    this.createDispatchRoute(routers.find(r => r.RouterName === 'dispatcher'));
+    this.createServiceRoutes(routers.find(r => r.RouterName === 'enhance'));
     this.createVirtualService(routers);
   }
 
@@ -261,7 +287,7 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
               attributes: [
                 {
                   key: "ECS_TASK_DEFINITION_FAMILY",
-                  value: name,
+                  value: `pg-${name}`,
                 },
               ],
             },
@@ -286,12 +312,12 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
       })).addDependsOn(this.mesh);
     };
 
-    // creates: job-scheduler-vn => job-scheduler.mesh.local
+    // creates: dispatcher-vn => dispatcher.mesh.local
     // Also creates its "Backends" dependencies
     // From the docs: 
-    create("job-scheduler", 
+    create("dispatcher", 
            this.namespace, 
-           "job-scheduler", 
+           "dispatcher", 
            this.processors.map(p => {
               return {
                 virtualService: { 
@@ -306,10 +332,11 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
     });
   }
 
+
   createVirtualRouter(): VirtualRouterMap[] {
-    const create = (processor: string): CfnVirtualRouter => {
-      const router = new CfnVirtualRouter(this, `${processor}-virtual-router`, {
-        virtualRouterName: `${processor}-vr`,
+    const create = (routerName: string): CfnVirtualRouter => {
+      const router = new CfnVirtualRouter(this, `${routerName}-virtual-router`, {
+        virtualRouterName: `${routerName}-vr`,
         meshName: this.mesh.meshName,
         spec: {
           listeners: [{
@@ -323,41 +350,66 @@ export class PhotoGalleryCdkStack extends cdk.Stack {
       router.addDependsOn(this.mesh);
       return router;
     }
-    return this.processors.map((p) => { return { Processor: p, Router: create(p) }});
+    const routerNames = ['dispatcher', 'enhance'];
+    return routerNames.map((p) => { return { RouterName: p, Router: create(p) }});
   }
 
-  createRoute(routers: VirtualRouterMap[]) {
-    routers.forEach(map => {
-      const route = new CfnRoute(this, `${map.Processor}-route`, {
-        routeName: `${map.Processor}-route`,
-        meshName: this.mesh.meshName,
-        virtualRouterName: map.Router.virtualRouterName,
-        spec: {
-          httpRoute: {
-            match: {
-              prefix: "/",
-            },
-            action: {
-              weightedTargets: [{
-                virtualNode: `${map.Processor}-vn`,
-                weight: 1,
-              }],
-            },
+  createDispatchRoute(map: VirtualRouterMap | undefined) { 
+    if (!map || map === undefined) return;
+    const route = new CfnRoute(this, `${map.RouterName}-route`, {
+      routeName: `${map.RouterName}-route`,
+      meshName: this.mesh.meshName,
+      virtualRouterName: map.Router.virtualRouterName,
+      spec: {
+        httpRoute: {
+          match: {
+            prefix: "/",
+          },
+          action: {
+            weightedTargets: [{
+              virtualNode: `${map.RouterName}-vn`,
+              weight: 1,
+            }],
           },
         },
-      });
-      route.addDependsOn(map.Router);
+      },
     });
+    route.addDependsOn(map.Router);    
+  }
+
+  createServiceRoutes(map: VirtualRouterMap | undefined) { 
+    if (!map || map === undefined) return;
+    const route = new CfnRoute(this, `${map.RouterName}-route`, {
+      routeName: `${map.RouterName}-route`,
+      meshName: this.mesh.meshName,
+      virtualRouterName: map.Router.virtualRouterName,
+      spec: {
+        httpRoute: {
+          match: {
+            prefix: "/",
+          },
+          action: {
+            weightedTargets: this.processors.map(p => {
+              return { 
+                virtualNode: `${p}-vn`,
+                weight: 1
+              }
+            })
+          },
+        },
+      },
+    });
+    route.addDependsOn(map.Router);    
   }
 
   createVirtualService(routers: VirtualRouterMap[]) {
     routers.forEach(map => {
-      let svc = new CfnVirtualService(this, `${map.Processor}-virtual-service`, {
-        virtualServiceName: `${map.Processor}.${this.namespace}`,
+      let svc = new CfnVirtualService(this, `${map.RouterName}-virtual-service`, {
+        virtualServiceName: `${map.RouterName}.${this.namespace}`,
         meshName: this.mesh.meshName,
         spec: {
           provider: {
-            virtualRouter: {virtualRouterName: `${map.Processor}-vr`},
+            virtualRouter: {virtualRouterName: `${map.RouterName}-vr`},
           },
         },
       });
